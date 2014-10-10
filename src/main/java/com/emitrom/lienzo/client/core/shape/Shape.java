@@ -26,9 +26,6 @@ import com.emitrom.lienzo.client.core.animation.AnimationTweener;
 import com.emitrom.lienzo.client.core.animation.IAnimationCallback;
 import com.emitrom.lienzo.client.core.animation.IAnimationHandle;
 import com.emitrom.lienzo.client.core.animation.TweeningAnimation;
-import com.emitrom.lienzo.client.core.shape.json.IJSONSerializable;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.DashArray;
 import com.emitrom.lienzo.client.core.types.DragBounds;
 import com.emitrom.lienzo.client.core.types.FillGradient;
@@ -45,7 +42,6 @@ import com.emitrom.lienzo.client.widget.DefaultDragConstraintEnforcer;
 import com.emitrom.lienzo.client.widget.DragConstraintEnforcer;
 import com.emitrom.lienzo.shared.core.types.Color;
 import com.emitrom.lienzo.shared.core.types.DragConstraint;
-import com.emitrom.lienzo.shared.core.types.DragMode;
 import com.emitrom.lienzo.shared.core.types.IColor;
 import com.emitrom.lienzo.shared.core.types.LineCap;
 import com.emitrom.lienzo.shared.core.types.LineJoin;
@@ -82,9 +78,9 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
         setX(0).setY(0).setAlpha(1).setDraggable(false);
     }
 
-    public Shape(ShapeType type, JSONObject node, ValidationContext ctx) throws ValidationException
+    public Shape(ShapeType type, JSONObject node)
     {
-        super(NodeType.SHAPE, node, ctx);
+        super(NodeType.SHAPE, node);
 
         m_type = type;
 
@@ -290,12 +286,12 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
         {
             if (width > 0)
             {
-                color = LienzoGlobals.get().getDefaultStrokeColor();
+                color = LienzoGlobals.getInstance().getDefaultStrokeColor();
             }
         }
         else if (width <= 0)
         {
-            width = LienzoGlobals.get().getDefaultStrokeWidth();
+            width = LienzoGlobals.getInstance().getDefaultStrokeWidth();
         }
         if ((null == color) && (width <= 0))
         {
@@ -303,9 +299,9 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
             {
                 return false;
             }
-            color = LienzoGlobals.get().getDefaultStrokeColor();
+            color = LienzoGlobals.getInstance().getDefaultStrokeColor();
 
-            width = LienzoGlobals.get().getDefaultStrokeWidth();
+            width = LienzoGlobals.getInstance().getDefaultStrokeWidth();
         }
         if (context.isSelection())
         {
@@ -325,7 +321,7 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
 
         if (attr.isDefined(Attribute.DASH_ARRAY))
         {
-            if (LienzoGlobals.get().isLineDashSupported())
+            if (LienzoGlobals.getInstance().isLineDashSupported())
             {
                 DashArray dash = attr.getDashArray();
 
@@ -472,12 +468,6 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
         return this;
     }
 
-    @Override
-    public Shape<?> asShape()
-    {
-        return this;
-    }
-
     /**
      * Returns the parent.
      * 
@@ -546,7 +536,7 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -569,7 +559,7 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -592,7 +582,7 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -615,7 +605,7 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -980,31 +970,6 @@ public abstract class Shape<T extends Shape<T>> extends Node<T> implements IPrim
     public T setDragBounds(DragBounds bounds)
     {
         getAttributes().setDragBounds(bounds);
-
-        return cast();
-    }
-
-    /**
-     * Gets the {@link DragMode} for this node.
-     * 
-     * @return DragMode
-     */
-    @Override
-    public DragMode getDragMode()
-    {
-        return getAttributes().getDragMode();
-    }
-
-    /**
-     * Sets this node's drag mode.
-     * 
-     * @param mode
-     * @return T
-     */
-    @Override
-    public T setDragMode(DragMode mode)
-    {
-        getAttributes().setDragMode(mode);
 
         return cast();
     }

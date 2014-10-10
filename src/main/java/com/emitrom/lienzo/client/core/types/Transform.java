@@ -60,7 +60,7 @@ public final class Transform
      */
     public Transform(double m00, double m10, double m01, double m11, double m02, double m12)
     {
-        m_jso = TransformJSO.make(m00, m10, m01, m11, m02, m12);
+        m_jso = TransformJSO.makeFromDoubles(m00, m10, m01, m11, m02, m12);
     }
 
     /**
@@ -91,11 +91,6 @@ public final class Transform
         m_jso = jso;
     }
 
-    public final boolean isIdentity()
-    {
-        return m_jso.isIdentity();
-    }
-
     /**
      * Returns a copy of this Transform. 
      * The original Transform is not affected.
@@ -105,13 +100,6 @@ public final class Transform
     public Transform copy()
     {
         return new Transform(m_jso.copy());
-    }
-
-    public final Transform reset()
-    {
-        m_jso.reset();
-
-        return this;
     }
 
     /**
@@ -323,14 +311,14 @@ public final class Transform
      * @param x
      * @param y
      */
-    public final Transform scaleAboutPoint(double scale, double x, double y)
+    public Transform scaleAboutPoint(double scale, double x, double y)
     {
         translate(x, y);
-
+        
         scale(scale, scale);
-
+        
         translate(-x, -y);
-
+        
         return this;
     }
 
@@ -340,7 +328,7 @@ public final class Transform
      * @return a double value that is the X coordinate of the scaling
      *  element of the affine transformation matrix.
      */
-    public final double getScaleX()
+    public double getScaleX()
     {
         return get(0);
     }
@@ -351,7 +339,7 @@ public final class Transform
      * @return a double value that is the Y coordinate of the scaling
      *  element of the affine transformation matrix.
      */
-    public final double getScaleY()
+    public double getScaleY()
     {
         return get(3);
     }
@@ -362,7 +350,7 @@ public final class Transform
     * @return a double value that is the X coordinate of the shearing
     *  element of the affine transformation matrix.
     */
-    public final double getShearX()
+    public double getShearX()
     {
         return get(2);
     }
@@ -373,7 +361,7 @@ public final class Transform
      * @return a double value that is the Y coordinate of the shearing
      *  element of the affine transformation matrix.
      */
-    public final double getShearY()
+    public double getShearY()
     {
         return get(1);
     }
@@ -384,7 +372,7 @@ public final class Transform
      * @return a double value that is the X coordinate of the translation
      *  element of the affine transformation matrix.
      */
-    public final double getTranslateX()
+    public double getTranslateX()
     {
         return get(4);
     }
@@ -395,7 +383,7 @@ public final class Transform
      * @return a double value that is the Y coordinate of the translation
      *  element of the affine transformation matrix. 
      */
-    public final double getTranslateY()
+    public double getTranslateY()
     {
         return get(5);
     }
@@ -492,7 +480,7 @@ public final class Transform
      * @param viewportHeight Height of the Viewport.
      * @return Transform
      */
-    public static final Transform createViewportTransform(double x, double y, double width, double height, double viewportWidth, double viewportHeight)
+    public static Transform createViewportTransform(double x, double y, double width, double height, double viewportWidth, double viewportHeight)
     {
         if (width <= 0 || height <= 0)
         {
@@ -546,6 +534,7 @@ public final class Transform
     {
         protected TransformJSO()
         {
+
         }
 
         public static final native TransformJSO make()
@@ -553,7 +542,7 @@ public final class Transform
 			return [ 1, 0, 0, 1, 0, 0 ];
         }-*/;
 
-        public static final native TransformJSO make(double m00, double m10, double m01, double m11, double m02, double m12)
+        public static final native TransformJSO makeFromDoubles(double m00, double m10, double m01, double m11, double m02, double m12)
         /*-{
 			return [ m00, m10, m01, m11, m02, m12 ];
         }-*/;
@@ -565,39 +554,14 @@ public final class Transform
 			this[5] += this[1] * x + this[3] * y;
         }-*/;
 
-        public final native boolean isIdentity()
-        /*-{
-			return (this[0] == 1) && (this[1] == 0) && (this[2] == 0)
-					&& (this[3] == 1) && (this[4] == 0) && (this[5] == 0);
-        }-*/;
-
         public final native TransformJSO copy()
         /*-{
 			return [ this[0], this[1], this[2], this[3], this[4], this[5] ];
         }-*/;
 
-        public final native void reset()
-        /*-{
-			this[0] = 1;
-
-			this[1] = 0;
-
-			this[2] = 0;
-
-			this[3] = 1;
-
-			this[4] = 0;
-
-			this[5] = 0;
-        }-*/;
-
         public final native void scale(double sx, double sy)
         /*-{
 			this[0] *= sx;
-
-			this[1] *= sx;
-
-			this[2] *= sy;
 
 			this[3] *= sy;
         }-*/;

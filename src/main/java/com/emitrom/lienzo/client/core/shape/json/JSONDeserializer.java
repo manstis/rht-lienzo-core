@@ -22,6 +22,7 @@ import java.util.Set;
 import com.emitrom.lienzo.client.core.Attribute;
 import com.emitrom.lienzo.client.core.AttributeType;
 import com.emitrom.lienzo.client.core.shape.IContainer;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.Node;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
@@ -39,8 +40,6 @@ import com.google.gwt.json.client.JSONValue;
  */
 public final class JSONDeserializer
 {
-    private FactoryRegistry               m_registry;
-
     private static final JSONDeserializer s_instance = new JSONDeserializer();
 
     public static final JSONDeserializer getInstance() // questionable? do we allow sub-classing? this is always a problem with singletons. Should the class be final?
@@ -60,25 +59,9 @@ public final class JSONDeserializer
      * @param string JSON string as produced by {@link IJSONSerializable#toJSONString()}
      * @return IJSONSerializable
      */
-    public final IJSONSerializable<?> fromString(String string) throws Exception, ValidationException
+    public final IJSONSerializable<?> fromString(String string)
     {
-        ValidationContext ctx = new ValidationContext();
-
-        ctx.setValidate(true);
-
-        ctx.setStopOnError(true);
-
-        IJSONSerializable<?> result = fromString(string, ctx);
-
-        if (ctx.getErrorCount() > 0)
-        {
-            throw new ValidationException(ctx);
-        }
-        if (null == result)
-        {
-            throw new Exception("Unknown reason for NULL result in JSONParser");
-        }
-        return result;
+        return fromString(string, true);
     }
 
     /**
@@ -145,32 +128,24 @@ public final class JSONDeserializer
      */
     public final IJSONSerializable<?> fromString(String string, ValidationContext ctx)
     {
+        if ((null == string) || (string = string.trim()).isEmpty())
+        {
+            return null;
+        }
+        JSONValue value = JSONParser.parseStrict(string);
+
+        if (null == value)
+        {
+            return null;
+        }
+        JSONObject json = value.isObject();
+
+        if (null == json)
+        {
+            return null;
+        }
         try
         {
-            ctx.push("fromString");
-
-            if ((null == string) || (string = string.trim()).isEmpty())
-            {
-                ctx.addError("NULL JSON String");
-
-                return null;
-            }
-            JSONValue value = JSONParser.parseStrict(string);
-
-            if (null == value)
-            {
-                ctx.addError("NULL from JSONParser");
-
-                return null;
-            }
-            JSONObject json = value.isObject();
-
-            if (null == json)
-            {
-                ctx.addError("Result is not a JSONObject");
-
-                return null;
-            }
             return fromJSON(json, ctx);
         }
         catch (ValidationException e)
@@ -220,11 +195,7 @@ public final class JSONDeserializer
             {
                 type = styp.stringValue();
 
-                if (null == m_registry)
-                {
-                    m_registry = FactoryRegistry.getInstance();
-                }
-                factory = m_registry.getFactory(type);
+                factory = FactoryRegistry.getInstance().getFactory(type);
 
                 if (null == factory)
                 {
@@ -246,13 +217,13 @@ public final class JSONDeserializer
 
                 validateAttributes(json, factory, type, ctx);
             }
-            if (factory.isPostProcessed())
+            if (factory instanceof PostProcessNodeFactory)
             {
                 IJSONSerializable<?> node = factory.create(json, ctx);
 
                 if (null != node)
                 {
-                    factory.process(node, ctx);
+                    ((PostProcessNodeFactory) factory).process(node);
                 }
                 return node;
             }
@@ -337,61 +308,57 @@ public final class JSONDeserializer
      * You should only call this when you're writing your own {@link IContainer} class
      * and you're building a custom {@link IFactory}.
      * 
-     * @param container IContainer
+     * @param g IContainer
      * @param node parent JSONObject
-     * @param factory IContainerFactory
+     * @param containerFactory IContainerFactory
      * @param ctx ValidationContext
      * @throws ValidationException
      */
-
-    public final void deserializeChildren(IContainer<?, ?> container, JSONObject node, IContainerFactory factory, ValidationContext ctx) throws ValidationException
+    @SuppressWarnings("unchecked")
+    public final void deserializeChildren(@SuppressWarnings("rawtypes") IContainer g, JSONObject node, IContainerFactory containerFactory, ValidationContext ctx) throws ValidationException
     {
-        JSONValue jsonvalu = node.get("children");
+        // TODO I couldn't get the template parameters of IContainer to work with
+        // GroupFactory and LayerFactory, so I'll use @SuppressWarnings
 
-        if (null == jsonvalu)
+        JSONValue kidsVal = node.get("children");
+
+        if (kidsVal == null)
         {
             return; // OK - 'children' is optional
         }
         ctx.push("children");
 
-        JSONArray array = jsonvalu.isArray();
+        JSONArray arr = kidsVal.isArray();
 
-        if (null == array)
+        if (arr == null)
         {
             ctx.addBadTypeError("Array");
         }
         else
         {
-            final int size = array.size();
+            final int size = arr.size();
 
-            for (int i = 0; i < size; i++)
+            for (int i = 0, n = size; i < n; i++)
             {
                 ctx.pushIndex(i);
 
-                jsonvalu = array.get(i);
+                JSONValue kidVal = arr.get(i);
 
-                JSONObject object = jsonvalu.isObject();
+                JSONObject kidObj = kidVal.isObject();
 
-                if (null == object)
+                if (kidObj == null)
                 {
                     ctx.addBadTypeError("Object");
                 }
                 else
                 {
-                    IJSONSerializable<?> serial = fromJSON(object, ctx);
+                    IJSONSerializable<?> kidNode = fromJSON(kidObj, ctx);
 
-                    if (null != serial)
+                    if (kidNode != null)
                     {
-                        if (serial instanceof Node)
+                        if (containerFactory.isValidForContainer(g, kidNode))
                         {
-                            if (false == factory.addNodeForContainer(container, (Node<?>) serial, ctx))
-                            {
-                                ;
-                            }
-                        }
-                        else
-                        {
-                            ctx.addBadTypeError("Node");
+                            g.add(kidNode);
                         }
                     }
                 }

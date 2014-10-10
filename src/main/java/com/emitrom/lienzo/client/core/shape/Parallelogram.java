@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -46,9 +45,9 @@ public class Parallelogram extends Shape<Parallelogram>
         setWidth(width).setHeight(height).setSkew(skew);
     }
 
-    protected Parallelogram(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Parallelogram(JSONObject node)
     {
-        super(ShapeType.PARALLELOGRAM, node, ctx);
+        super(ShapeType.PARALLELOGRAM, node);
     }
 
     /**
@@ -59,45 +58,43 @@ public class Parallelogram extends Shape<Parallelogram>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double wide = getWidth();
+        double skew = getSkew();
 
-        final double high = getHeight();
+        double wide = getWidth();
 
-        if ((wide > 0) && (high > 0))
+        double high = getHeight();
+
+        context.beginPath();
+
+        if (skew > 0)
         {
-            final double skew = getSkew();
-            
-            context.beginPath();
+            context.moveTo(skew, 0);
 
-            if (skew > 0)
-            {
-                context.moveTo(skew, 0);
+            context.lineTo(wide, 0);
 
-                context.lineTo(wide, 0);
+            context.lineTo(wide - skew, high);
 
-                context.lineTo(wide - skew, high);
-
-                context.lineTo(0, high);
-            }
-            else if (skew < 0)
-            {
-                context.moveTo(0, 0);
-
-                context.lineTo(wide - Math.abs(skew), 0);
-
-                context.lineTo(wide, high);
-
-                context.lineTo(Math.abs(skew), high);
-            }
-            else
-            {
-                context.rect(0, 0, wide, high);
-            }
-            context.closePath();
-
-            return true;
+            context.lineTo(0, high);
         }
-        return false;
+        else if (skew < 0)
+        {
+            skew = Math.abs(skew);
+
+            context.moveTo(0, 0);
+
+            context.lineTo(wide - skew, 0);
+
+            context.lineTo(wide, high);
+
+            context.lineTo(skew, high);
+        }
+        else
+        {
+            context.rect(0, 0, wide, high);
+        }
+        context.closePath();
+
+        return true;
     }
 
     /**
@@ -170,7 +167,7 @@ public class Parallelogram extends Shape<Parallelogram>
     }
 
     @Override
-    public IFactory<Parallelogram> getFactory()
+    public IFactory<?> getFactory()
     {
         return new ParallelogramFactory();
     }
@@ -189,9 +186,9 @@ public class Parallelogram extends Shape<Parallelogram>
         }
 
         @Override
-        public Parallelogram create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Parallelogram create(JSONObject node, ValidationContext ctx)
         {
-            return new Parallelogram(node, ctx);
+            return new Parallelogram(node);
         }
     }
 }

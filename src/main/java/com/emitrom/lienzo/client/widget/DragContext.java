@@ -81,13 +81,13 @@ public class DragContext
     public DragContext(INodeXYEvent event, IPrimitive<?> node)
     {
         m_node = node;
-
+        
         m_nodeX = node.getX();
-
+        
         m_nodeY = node.getY();
 
         m_eventX = m_dragStartX = event.getX();
-
+        
         m_eventY = m_dragStartY = event.getY();
 
         m_localToGlobal = m_node.getParent().getAbsoluteTransform();
@@ -96,13 +96,13 @@ public class DragContext
 
         // Convert one point from global to local coordinates
         // We need it when calculating (dx,dy) in local coordinates
-
+        
         m_globalToLocal.transform(new Point2D(0, 0), m_p1);
 
         // Initialize the DragConstraintsEnforcer
-
+        
         m_dragConstraints = node.getDragConstraints();
-
+        
         if (m_dragConstraints != null) m_dragConstraints.startDrag(this);
     }
 
@@ -112,11 +112,11 @@ public class DragContext
      * 
      * @param context
      */
-    public void drawNodeWithTransforms(Context2D context)
+    public void drawNode(Context2D context)
     {
         context.save();
-
-        context.transform(m_localToGlobal);
+        
+        context.transform(m_localToGlobal);        
 
         m_node.drawWithTransforms(context);
 
@@ -132,29 +132,27 @@ public class DragContext
     public void dragUpdate(INodeXYEvent event)
     {
         m_eventX = event.getX();
-
+        
         m_eventY = event.getY();
-
+        
         m_dx = m_eventX - m_dragStartX;
-
+        
         m_dy = m_eventY - m_dragStartY;
 
         Point2D p2 = new Point2D(0, 0);
-
+        
         m_globalToLocal.transform(new Point2D(m_dx, m_dy), p2);
 
         m_localAdjusted.setX(p2.getX() - m_p1.getX());
-
+        
         m_localAdjusted.setY(p2.getY() - m_p1.getY());
 
         // Let the constraints adjust the location if necessary
-
-        if (m_dragConstraints != null)
-        {
-            m_dragConstraints.adjust(m_localAdjusted);
-        }
+        
+        if (m_dragConstraints != null) m_dragConstraints.adjust(m_localAdjusted);
+        
         m_node.setX(m_nodeX + m_localAdjusted.getX());
-
+        
         m_node.setY(m_nodeY + m_localAdjusted.getY());
     }
 
@@ -167,9 +165,9 @@ public class DragContext
     public void dragDone()
     {
         // update X,Y attributes
-
+        
         m_node.setX(m_nodeX + m_localAdjusted.getX());
-
+        
         m_node.setY(m_nodeY + m_localAdjusted.getY());
     }
 
@@ -180,10 +178,10 @@ public class DragContext
     public void reset()
     {
         m_node.setX(m_nodeX);
-
+        
         m_node.setY(m_nodeY);
     }
-
+    
     /**
      * Returns x0 in global coordinates - i.e. event(x,y) at start of drag operation
      * 

@@ -43,11 +43,9 @@ import com.emitrom.lienzo.client.core.types.Transform;
 import com.emitrom.lienzo.client.core.types.Transform.TransformJSO;
 import com.emitrom.lienzo.shared.core.types.ArrowType;
 import com.emitrom.lienzo.shared.core.types.DragConstraint;
-import com.emitrom.lienzo.shared.core.types.DragMode;
 import com.emitrom.lienzo.shared.core.types.LineCap;
 import com.emitrom.lienzo.shared.core.types.LineJoin;
-import com.emitrom.lienzo.shared.core.types.ImageSelectionMode;
-import com.emitrom.lienzo.shared.core.types.ImageSerializationMode;
+import com.emitrom.lienzo.shared.core.types.PictureSerializationMode;
 import com.emitrom.lienzo.shared.core.types.TextAlign;
 import com.emitrom.lienzo.shared.core.types.TextBaseLine;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -298,7 +296,7 @@ public class Attributes extends JavaScriptObject
         {
             return getBoolean(Attribute.FILL_SHAPE_FOR_SELECTION.getProperty());
         }
-        return LienzoGlobals.get().getDefaultFillShapeForSelection();
+        return LienzoGlobals.getInstance().getDefaultFillShapeForSelection();
     }
 
     public final void setListening(boolean listening)
@@ -620,7 +618,7 @@ public class Attributes extends JavaScriptObject
     {
         if (points <= 0.0)
         {
-            points = LienzoGlobals.get().getDefaultFontSize();
+            points = LienzoGlobals.getInstance().getDefaultFontSize();
         }
         put(Attribute.FONT_SIZE.getProperty(), points);
     }
@@ -631,7 +629,7 @@ public class Attributes extends JavaScriptObject
 
         if (points <= 0.0)
         {
-            points = LienzoGlobals.get().getDefaultFontSize();
+            points = LienzoGlobals.getInstance().getDefaultFontSize();
         }
         return points;
     }
@@ -645,7 +643,7 @@ public class Attributes extends JavaScriptObject
     {
         if ((null == family) || (family = family.trim()).isEmpty())
         {
-            put(Attribute.FONT_FAMILY.getProperty(), LienzoGlobals.get().getDefaultFontFamily());
+            put(Attribute.FONT_FAMILY.getProperty(), LienzoGlobals.getInstance().getDefaultFontFamily());
         }
         else
         {
@@ -659,7 +657,7 @@ public class Attributes extends JavaScriptObject
 
         if ((null == family) || (family = family.trim()).isEmpty())
         {
-            family = LienzoGlobals.get().getDefaultFontFamily();
+            family = LienzoGlobals.getInstance().getDefaultFontFamily();
         }
         return family;
     }
@@ -668,7 +666,7 @@ public class Attributes extends JavaScriptObject
     {
         if ((null == style) || (style = style.trim()).isEmpty())
         {
-            put(Attribute.FONT_STYLE.getProperty(), LienzoGlobals.get().getDefaultFontStyle());
+            put(Attribute.FONT_STYLE.getProperty(), LienzoGlobals.getInstance().getDefaultFontStyle());
         }
         else
         {
@@ -682,7 +680,7 @@ public class Attributes extends JavaScriptObject
 
         if ((null == style) || (style = style.trim()).isEmpty())
         {
-            style = LienzoGlobals.get().getDefaultFontStyle();
+            style = LienzoGlobals.getInstance().getDefaultFontStyle();
         }
         return style;
     }
@@ -935,84 +933,87 @@ public class Attributes extends JavaScriptObject
         }
     }
 
-    public final DragMode getDragMode()
-    {
-        return DragMode.lookup(getString(Attribute.DRAG_MODE.getProperty()));
-    }
-
-    public final void setDragMode(DragMode mode)
-    {
-        if (null != mode)
-        {
-            put(Attribute.DRAG_MODE.getProperty(), mode.getValue());
-        }
-        else
-        {
-            delete(Attribute.DRAG_MODE.getProperty());
-        }
-    }
-
-    public final void setClippedImageStartX(int clippedImageStartX)
+    public final void setClippedImageStartX(double clippedImageStartX)
     {
         put(Attribute.CLIPPED_IMAGE_START_X.getProperty(), clippedImageStartX);
     }
 
-    public final int getClippedImageStartX()
+    public final double getClippedImageStartX()
     {
-        return getInteger(Attribute.CLIPPED_IMAGE_START_X.getProperty());
+        return getDouble(Attribute.CLIPPED_IMAGE_START_X.getProperty());
     }
 
-    public final void setClippedImageStartY(int clippedImageStartY)
+    public final void setClippedImageStartY(double clippedImageStartY)
     {
         put(Attribute.CLIPPED_IMAGE_START_Y.getProperty(), clippedImageStartY);
     }
 
-    public final int getClippedImageStartY()
+    public final double getClippedImageStartY()
     {
-        return getInteger(Attribute.CLIPPED_IMAGE_START_Y.getProperty());
+        return getDouble(Attribute.CLIPPED_IMAGE_START_Y.getProperty());
     }
 
-    public final void setClippedImageWidth(int clippedImageWidth)
+    public final void setClippedImageWidth(double clippedImageWidth)
     {
         put(Attribute.CLIPPED_IMAGE_WIDTH.getProperty(), clippedImageWidth);
     }
 
-    public final int getClippedImageWidth()
+    public final double getClippedImageWidth()
     {
-        return getInteger(Attribute.CLIPPED_IMAGE_WIDTH.getProperty());
+        return getDouble(Attribute.CLIPPED_IMAGE_WIDTH.getProperty());
     }
 
-    public final void setClippedImageHeight(int clippedImageHeight)
+    public final void setClippedImageHeight(double clippedImageHeight)
     {
         put(Attribute.CLIPPED_IMAGE_HEIGHT.getProperty(), clippedImageHeight);
     }
 
-    public final int getClippedImageHeight()
+    public final double getClippedImageHeight()
     {
-        return getInteger(Attribute.CLIPPED_IMAGE_HEIGHT.getProperty());
+        return getDouble(Attribute.CLIPPED_IMAGE_HEIGHT.getProperty());
     }
 
-    public final void setClippedImageDestinationWidth(int clippedImageDestinationWidth)
+    public final void setClippedImageDestinationWidth(double clippedImageDestinationWidth)
     {
         put(Attribute.CLIPPED_IMAGE_DESTINATION_WIDTH.getProperty(), clippedImageDestinationWidth);
     }
 
-    public final int getClippedImageDestinationWidth()
+    public final double getClippedImageDestinationWidth()
     {
-        return getInteger(Attribute.CLIPPED_IMAGE_DESTINATION_WIDTH.getProperty());
+        return getDouble(Attribute.CLIPPED_IMAGE_DESTINATION_WIDTH.getProperty());
     }
 
-    public final void setClippedImageDestinationHeight(int clippedImageDestinationHeight)
+    public final void setClippedImageDestinationHeight(double clippedImageDestinationHeight)
     {
         put(Attribute.CLIPPED_IMAGE_DESTINATION_HEIGHT.getProperty(), clippedImageDestinationHeight);
     }
 
-    public final int getClippedImageDestinationHeight()
+    public final double getClippedImageDestinationHeight()
     {
-        return getInteger(Attribute.CLIPPED_IMAGE_DESTINATION_HEIGHT.getProperty());
+        return getDouble(Attribute.CLIPPED_IMAGE_DESTINATION_HEIGHT.getProperty());
     }
 
-    public final void setSerializationMode(ImageSerializationMode mode)
+    public final void setPictureCategory(String pictureCategory)
+    {
+        put(Attribute.PICTURE_CATEGORY.getProperty(), pictureCategory);
+    }
+
+    public final String getPictureCategory()
+    {
+        return getString(Attribute.PICTURE_CATEGORY.getProperty());
+    }
+
+    public final void setResourceID(String resourceID)
+    {
+        put(Attribute.RESOURCE_ID.getProperty(), resourceID);
+    }
+
+    public final String getResourceID()
+    {
+        return getString(Attribute.RESOURCE_ID.getProperty());
+    }
+
+    public final void setSerializationMode(PictureSerializationMode mode)
     {
         if (null != mode)
         {
@@ -1024,26 +1025,9 @@ public class Attributes extends JavaScriptObject
         }
     }
 
-    public final ImageSerializationMode getSerializationMode()
+    public final PictureSerializationMode getSerializationMode()
     {
-        return ImageSerializationMode.lookup(getString(Attribute.SERIALIZATION_MODE.getProperty()));
-    }
-
-    public final void setImageSelectionMode(ImageSelectionMode mode)
-    {
-        if (null != mode)
-        {
-            put(Attribute.IMAGE_SELECTION_MODE.getProperty(), mode.getValue());
-        }
-        else
-        {
-            delete(Attribute.IMAGE_SELECTION_MODE.getProperty());
-        }
-    }
-
-    public final ImageSelectionMode getImageSelectionMode()
-    {
-        return ImageSelectionMode.lookup(getString(Attribute.IMAGE_SELECTION_MODE.getProperty()));
+        return PictureSerializationMode.lookup(getString(Attribute.SERIALIZATION_MODE.getProperty()));
     }
 
     public final void setBaseWidth(double baseWidth)
@@ -1131,21 +1115,7 @@ public class Attributes extends JavaScriptObject
         {
             return getBoolean(Attribute.LOOP.getProperty());
         }
-        return false;
-    }
-
-    public final void setPlaybackRate(double rate)
-    {
-        put(Attribute.PLAYBACK_RATE.getProperty(), rate);
-    }
-
-    public final double getPlaybackRate()
-    {
-        if (isDefined(Attribute.PLAYBACK_RATE))
-        {
-            return getDouble(Attribute.PLAYBACK_RATE.getProperty());
-        }
-        return 1.0;
+        return true;
     }
 
     public final void setVolume(double volume)
@@ -1178,34 +1148,6 @@ public class Attributes extends JavaScriptObject
             return volume;
         }
         return 0.0;
-    }
-
-    public final void setAutoPlay(boolean play)
-    {
-        put(Attribute.AUTO_PLAY.getProperty(), play);
-    }
-
-    public final boolean isAutoPlay()
-    {
-        if (isDefined(Attribute.AUTO_PLAY))
-        {
-            return getBoolean(Attribute.AUTO_PLAY.getProperty());
-        }
-        return false;
-    }
-
-    public final void setShowPoster(boolean show)
-    {
-        put(Attribute.SHOW_POSTER.getProperty(), show);
-    }
-
-    public final boolean isShowPoster()
-    {
-        if (isDefined(Attribute.SHOW_POSTER))
-        {
-            return getBoolean(Attribute.SHOW_POSTER.getProperty());
-        }
-        return false;
     }
 
     public final double getCurveFactor()
@@ -1387,7 +1329,7 @@ public class Attributes extends JavaScriptObject
     {
         if (typeOf(name) == NativeInternalType.NUMBER)
         {
-            return getInteger0(name);
+            return (int) (getDouble0(name) + 0.5);
         }
         return 0;
     }
@@ -1499,11 +1441,6 @@ public class Attributes extends JavaScriptObject
     private final native double getDouble0(String name)
     /*-{
 		return this[name];
-    }-*/;
-
-    private final native int getInteger0(String name)
-    /*-{
-		return Math.round(this[name]);
     }-*/;
 
     private final native String getString0(String name)

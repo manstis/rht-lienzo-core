@@ -122,9 +122,9 @@ public class GridLayer extends Layer
         setSecondaryLineY(secondaryLine);
     }
 
-    protected GridLayer(JSONObject node, ValidationContext ctx, Line[] lines, double[] sizes) throws ValidationException
+    protected GridLayer(JSONObject node, Line[] lines, double[] sizes)
     {
-        super(node, ctx);
+        super(node);
 
         setNodeType(NodeType.GRID_LAYER);
 
@@ -581,7 +581,7 @@ public class GridLayer extends Layer
                     }
                 }
             }
-            return new GridLayer(node, ctx, lines, sizes);
+            return new GridLayer(node, lines, sizes);
         }
     }
 }

@@ -17,12 +17,11 @@
 
 package com.emitrom.lienzo.client.core.image;
 
-import com.emitrom.lienzo.client.core.shape.Movie;
 import com.emitrom.lienzo.client.core.shape.Picture;
 import com.emitrom.lienzo.client.core.types.ImageData;
 
 /**
- * Interface to be used to create {@link Picture} and {@link Movie} filters.
+ * Interface to be used to create {@link Picture} filters.
  */
 public interface ImageDataFilter
 {
@@ -37,14 +36,4 @@ public interface ImageDataFilter
     public static int PIXEL_SZ = 4;
 
     public ImageData filter(ImageData source, boolean copy);
-
-    public boolean isTransforming();
-
-    public boolean isActive();
-
-    public void setActive(boolean active);
-    
-    public String getName();
-    
-    public void setName(String name);
 }

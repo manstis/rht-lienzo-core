@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -62,9 +61,9 @@ public class Bow extends Shape<Bow>
         setInnerRadius(innerRadius).setOuterRadius(outerRadius).setStartAngle(startAngle).setEndAngle(endAngle).setCounterClockwise(false);
     }
 
-    protected Bow(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Bow(JSONObject node)
     {
-        super(ShapeType.BOW, node, ctx);
+        super(ShapeType.BOW, node);
     }
 
     /**
@@ -77,31 +76,23 @@ public class Bow extends Shape<Bow>
     {
         final double end = getEndAngle();
 
-        final double beg = getStartAngle();
-
-        if (beg == end)
-        {
-            return false;
-        }
-        final double ord = getOuterRadius();
-
-        final double ird = getInnerRadius();
+        final double start = getStartAngle();
 
         final boolean ccw = isCounterClockwise();
 
-        if ((ord > 0) && (ird > 0))
+        if (start == end)
         {
-            context.beginPath();
-
-            context.arc(0, 0, ord, beg, end, ccw);
-
-            context.arc(0, 0, ird, end, beg, (false == ccw));
-
-            context.closePath();
-
-            return true;
+            return false;
         }
-        return false;
+        context.beginPath();
+
+        context.arc(0, 0, getOuterRadius(), start, end, ccw);
+
+        context.arc(0, 0, getInnerRadius(), end, start, (false == ccw));
+
+        context.closePath();
+
+        return true;
     }
 
     /**
@@ -222,7 +213,7 @@ public class Bow extends Shape<Bow>
     }
 
     @Override
-    public IFactory<Bow> getFactory()
+    public IFactory<?> getFactory()
     {
         return new BowFactory();
     }
@@ -245,9 +236,9 @@ public class Bow extends Shape<Bow>
         }
 
         @Override
-        public Bow create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Bow create(JSONObject node, ValidationContext ctx)
         {
-            return new Bow(node, ctx);
+            return new Bow(node);
         }
     }
 }

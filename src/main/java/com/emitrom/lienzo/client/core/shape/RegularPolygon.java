@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -45,9 +44,9 @@ public class RegularPolygon extends Shape<RegularPolygon>
         setRadius(radius).setSides(sides);
     }
 
-    protected RegularPolygon(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected RegularPolygon(JSONObject node)
     {
-        super(ShapeType.REGULAR_POLYGON, node, ctx);
+        super(ShapeType.REGULAR_POLYGON, node);
     }
 
     /**
@@ -126,7 +125,7 @@ public class RegularPolygon extends Shape<RegularPolygon>
     }
 
     @Override
-    public IFactory<RegularPolygon> getFactory()
+    public IFactory<?> getFactory()
     {
         return new RegularPolygonFactory();
     }
@@ -137,15 +136,15 @@ public class RegularPolygon extends Shape<RegularPolygon>
         {
             super(ShapeType.REGULAR_POLYGON);
 
-            addAttribute(Attribute.RADIUS, true);
+            addAttribute(Attribute.RADIUS);
 
-            addAttribute(Attribute.SIDES, true);
+            addAttribute(Attribute.SIDES);
         }
 
         @Override
-        public RegularPolygon create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public RegularPolygon create(JSONObject node, ValidationContext ctx)
         {
-            return new RegularPolygon(node, ctx);
+            return new RegularPolygon(node);
         }
     }
 }

@@ -27,7 +27,6 @@ import com.emitrom.lienzo.client.core.animation.IAnimationHandle;
 import com.emitrom.lienzo.client.core.animation.TweeningAnimation;
 import com.emitrom.lienzo.client.core.shape.json.ContainerNodeFactory;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
-import com.emitrom.lienzo.client.core.shape.json.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.json.JSONDeserializer;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
@@ -39,7 +38,6 @@ import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.widget.DefaultDragConstraintEnforcer;
 import com.emitrom.lienzo.client.widget.DragConstraintEnforcer;
 import com.emitrom.lienzo.shared.core.types.DragConstraint;
-import com.emitrom.lienzo.shared.core.types.DragMode;
 import com.emitrom.lienzo.shared.core.types.NodeType;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
@@ -65,9 +63,9 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
     /**
      * Constructor. Creates an instance of a group.
      */
-    protected Group(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Group(JSONObject node)
     {
-        super(NodeType.GROUP, node, ctx);
+        super(NodeType.GROUP, node);
 
         final Attributes attr = getAttributes();
 
@@ -478,43 +476,12 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
     }
 
     /**
-     * Gets the {@link DragMode} for this node.
-     * 
-     * @return DragMode
-     */
-    @Override
-    public DragMode getDragMode()
-    {
-        return getAttributes().getDragMode();
-    }
-
-    /**
-     * Sets this node's drag mode.
-     * 
-     * @param mode
-     * @return Group this Group
-     */
-    @Override
-    public Group setDragMode(DragMode mode)
-    {
-        getAttributes().setDragMode(mode);
-
-        return this;
-    }
-
-    /**
      * Returns this group as a {@link IContainer}
      * 
      * @return IContainer<IPrimitive>
      */
     @Override
-    public IContainer<Group, IPrimitive<?>> asContainer()
-    {
-        return this;
-    }
-
-    @Override
-    public Group asGroup()
+    public IContainer<IPrimitive<?>> asContainer()
     {
         return this;
     }
@@ -527,13 +494,11 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public Group add(IPrimitive<?> child)
+    public void add(IPrimitive<?> child)
     {
         super.add(child);
 
         child.attachToLayerColorMap();
-
-        return this;
     }
 
     /**
@@ -544,13 +509,11 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public Group remove(IPrimitive<?> child)
+    public void remove(IPrimitive<?> child)
     {
         child.detachFromLayerColorMap();
 
         super.remove(child);
-
-        return this;
     }
 
     /**
@@ -561,13 +524,11 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public Group removeAll()
+    public void removeAll()
     {
         detachFromLayerColorMap();
 
         super.removeAll();
-
-        return this;
     }
 
     /**
@@ -678,7 +639,7 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -701,7 +662,7 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -724,7 +685,7 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -747,7 +708,7 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
 
         if (null != parent)
         {
-            IContainer<?, IPrimitive<?>> container = (IContainer<?, IPrimitive<?>>) parent.asContainer();
+            IContainer<IPrimitive<?>> container = (IContainer<IPrimitive<?>>) parent.asContainer();
 
             if (null != container)
             {
@@ -785,7 +746,7 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
                             find.add(node);
                         }
                     }
-                    IContainer<?, ?> cont = node.asContainer();
+                    IContainer<?> cont = node.asContainer();
 
                     if (null != cont)
                     {
@@ -835,7 +796,13 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
     }
 
     @Override
-    public IFactory<Group> getFactory()
+    public boolean isValidForContainer(IJSONSerializable<?> node)
+    {
+        return (node instanceof IPrimitive<?>);
+    }
+
+    @Override
+    public IFactory<?> getFactory()
     {
         return new GroupFactory();
     }
@@ -845,12 +812,16 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
         public GroupFactory()
         {
             super(NodeType.GROUP);
-            
+
+            addAttribute(Attribute.ALPHA);
+
             addAttribute(Attribute.X);
 
             addAttribute(Attribute.Y);
-            
-            addAttribute(Attribute.ALPHA);
+
+            addAttribute(Attribute.FILL);
+
+            addAttribute(Attribute.STROKE);
 
             addAttribute(Attribute.DRAGGABLE);
 
@@ -865,41 +836,22 @@ public class Group extends ContainerNode<IPrimitive<?>, Group> implements IPrimi
             addAttribute(Attribute.DRAG_CONSTRAINT);
 
             addAttribute(Attribute.DRAG_BOUNDS);
-
-            addAttribute(Attribute.DRAG_MODE);
         }
 
         @Override
         public Group create(JSONObject node, ValidationContext ctx) throws ValidationException
         {
-            Group container = new Group(node, ctx);
+            Group g = new Group(node);
 
-            JSONDeserializer.getInstance().deserializeChildren(container, node, this, ctx);
+            JSONDeserializer.getInstance().deserializeChildren(g, node, this, ctx);
 
-            return container;
+            return g;
         }
 
         @Override
-        public boolean addNodeForContainer(IContainer<?, ?> container, Node<?> node, ValidationContext ctx)
+        public boolean isValidForContainer(IContainer<?> g, IJSONSerializable<?> node)
         {
-            if (node.getNodeType().isPrimitive())
-            {
-                container.asGroup().add(node.asPrimitive());
-
-                return true;
-            }
-            else
-            {
-                try
-                {
-                    ctx.addBadTypeError(node.getClass().getName() + " is not a Primitive");
-                }
-                catch (ValidationException e)
-                {
-                    return false;
-                }
-            }
-            return false;
+            return g.isValidForContainer(node);
         }
     }
 }

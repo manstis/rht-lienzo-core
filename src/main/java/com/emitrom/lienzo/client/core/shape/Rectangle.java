@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -59,9 +58,9 @@ public class Rectangle extends Shape<Rectangle>
         setWidth(width).setHeight(height).setCornerRadius(cornerRadius);
     }
 
-    protected Rectangle(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Rectangle(JSONObject node)
     {
-        super(ShapeType.RECTANGLE, node, ctx);
+        super(ShapeType.RECTANGLE, node);
     }
 
     /**
@@ -72,45 +71,41 @@ public class Rectangle extends Shape<Rectangle>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double w = getWidth();
+        context.beginPath();
 
-        final double h = getHeight();
+        double r = getCornerRadius();
 
-        final double r = getCornerRadius();
-
-        if ((w > 0) && (h > 0))
+        if (r != 0)
         {
-            context.beginPath();
+            double w = getWidth();
 
-            if ((r > 0) && (r < (w / 2)) && (r < (h / 2)))
-            {
-                context.moveTo(r, 0);
+            double h = getHeight();
 
-                context.lineTo(w - r, 0);
+            context.moveTo(r, 0);
 
-                context.arc(w - r, r, r, Math.PI * 3 / 2, 0, false);
+            context.lineTo(w - r, 0);
 
-                context.lineTo(w, h - r);
+            context.arc(w - r, r, r, Math.PI * 3 / 2, 0, false);
 
-                context.arc(w - r, h - r, r, 0, Math.PI / 2, false);
+            context.lineTo(w, h - r);
 
-                context.lineTo(r, h);
+            context.arc(w - r, h - r, r, 0, Math.PI / 2, false);
 
-                context.arc(r, h - r, r, Math.PI / 2, Math.PI, false);
+            context.lineTo(r, h);
 
-                context.lineTo(0, r);
+            context.arc(r, h - r, r, Math.PI / 2, Math.PI, false);
 
-                context.arc(r, r, r, Math.PI, Math.PI * 3 / 2, false);
-            }
-            else
-            {
-                context.rect(0, 0, w, h);
-            }
-            context.closePath();
+            context.lineTo(0, r);
 
-            return true;
+            context.arc(r, r, r, Math.PI, Math.PI * 3 / 2, false);
         }
-        return false;
+        else
+        {
+            context.rect(0, 0, attr.getWidth(), attr.getHeight());
+        }
+        context.closePath();
+
+        return true;
     }
 
     /**
@@ -183,7 +178,7 @@ public class Rectangle extends Shape<Rectangle>
     }
 
     @Override
-    public IFactory<Rectangle> getFactory()
+    public IFactory<?> getFactory()
     {
         return new RectangleFactory();
     }
@@ -202,9 +197,9 @@ public class Rectangle extends Shape<Rectangle>
         }
 
         @Override
-        public Rectangle create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Rectangle create(JSONObject node, ValidationContext ctx)
         {
-            return new Rectangle(node, ctx);
+            return new Rectangle(node);
         }
     }
 }

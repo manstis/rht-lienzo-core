@@ -21,8 +21,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.emitrom.lienzo.client.core.Context2D;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.FastArrayList;
 import com.emitrom.lienzo.shared.core.types.NodeType;
 import com.google.gwt.json.client.JSONObject;
@@ -37,7 +35,7 @@ import com.google.gwt.json.client.JSONObject;
  * 
  * @param <T>
  */
-public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerNode<M, T>> extends Node<T> implements IContainer<T, M>, IDrawable<T>, Iterable<M>
+public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerNode<M, T>> extends Node<T> implements IContainer<M>, IDrawable<T>, Iterable<M>
 {
     private final FastArrayList<M> m_list = new FastArrayList<M>();
 
@@ -46,9 +44,9 @@ public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerN
         super(type);
     }
 
-    protected ContainerNode(NodeType type, JSONObject node, ValidationContext ctx) throws ValidationException
+    protected ContainerNode(NodeType type, JSONObject node)
     {
-        super(type, node, ctx);
+        super(type, node);
     }
 
     @Override
@@ -76,16 +74,9 @@ public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerN
         return m_list;
     }
 
-    @Override
     public int length()
     {
         return m_list.length();
-    }
-
-    @SuppressWarnings("unchecked")
-    protected final T coerce()
-    {
-        return (T) this;
     }
 
     /**
@@ -96,15 +87,13 @@ public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerN
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public T add(M child)
+    public void add(M child)
     {
         Node<?> node = child.asNode();
 
         node.setParent(this);
 
         m_list.add(child);
-
-        return coerce();
     }
 
     /**
@@ -115,15 +104,13 @@ public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerN
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public T remove(M child)
+    public void remove(M child)
     {
         Node<?> node = child.asNode();
 
         node.setParent(null);
 
         m_list.remove(child);
-
-        return coerce();
     }
 
     /**
@@ -134,11 +121,9 @@ public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerN
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public T removeAll()
+    public void removeAll()
     {
         m_list.removeAll();
-
-        return coerce();
     }
 
     /**
@@ -163,44 +148,36 @@ public abstract class ContainerNode<M extends IDrawable<?>, T extends ContainerN
      * Moves the {@link Layer} up
      */
     @Override
-    public T moveUp(M node)
+    public void moveUp(M node)
     {
         getChildNodes().moveUp(node);
-
-        return coerce();
     }
 
     /**
      * Moves the {@link Layer} down
      */
     @Override
-    public T moveDown(M node)
+    public void moveDown(M node)
     {
         getChildNodes().moveDown(node);
-
-        return coerce();
     }
 
     /**
      * Moves the {@link Layer} to the top
      */
     @Override
-    public T moveToTop(M node)
+    public void moveToTop(M node)
     {
         getChildNodes().moveToTop(node);
-
-        return coerce();
     }
 
     /**
      * Moves the {@link Layer} to the bottom
      */
     @Override
-    public T moveToBottom(M node)
+    public void moveToBottom(M node)
     {
         getChildNodes().moveToBottom(node);
-
-        return coerce();
     }
 
     @Override

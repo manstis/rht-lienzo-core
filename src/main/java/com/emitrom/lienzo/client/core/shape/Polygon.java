@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
@@ -46,9 +45,9 @@ public class Polygon extends Shape<Polygon>
         setPoints(points);
     }
 
-    protected Polygon(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Polygon(JSONObject node)
     {
-        super(ShapeType.POLYGON, node, ctx);
+        super(ShapeType.POLYGON, node);
     }
 
     /**
@@ -108,7 +107,7 @@ public class Polygon extends Shape<Polygon>
     }
 
     @Override
-    public IFactory<Polygon> getFactory()
+    public IFactory<?> getFactory()
     {
         return new PolygonFactory();
     }
@@ -123,9 +122,9 @@ public class Polygon extends Shape<Polygon>
         }
 
         @Override
-        public Polygon create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Polygon create(JSONObject node, ValidationContext ctx)
         {
-            return new Polygon(node, ctx);
+            return new Polygon(node);
         }
     }
 }

@@ -31,10 +31,11 @@ import com.google.gwt.core.client.JavaScriptObject;
  *  </li>
  * </ui>
  */
-public class RGBIgnoreAlphaImageDataFilter extends AbstractBaseRGBImageDataFilter<RGBIgnoreAlphaImageDataFilter>
+public class RGBIgnoreAlphaImageDataFilter extends RGBImageDataFilter implements ImageDataFilter
 {
     public RGBIgnoreAlphaImageDataFilter()
     {
+
     }
 
     public RGBIgnoreAlphaImageDataFilter(int r, int g, int b)
@@ -47,9 +48,12 @@ public class RGBIgnoreAlphaImageDataFilter extends AbstractBaseRGBImageDataFilte
         super(color);
     }
 
-    public RGBIgnoreAlphaImageDataFilter(String color)
+    @Override
+    public RGBIgnoreAlphaImageDataFilter setNative(boolean isnative)
     {
-        super(color);
+        super.setNative(isnative);
+
+        return this;
     }
 
     /**
@@ -62,16 +66,12 @@ public class RGBIgnoreAlphaImageDataFilter extends AbstractBaseRGBImageDataFilte
         {
             return null;
         }
+        final int length = ((source.getWidth() * source.getHeight()) * PIXEL_SZ);
+
         if (copy)
         {
             source = source.copy();
         }
-        if (false == isActive())
-        {
-            return source;
-        }
-        final int length = getLength(source);
-
         final CanvasPixelArray data = source.getData();
 
         if (null == data)
@@ -105,7 +105,7 @@ public class RGBIgnoreAlphaImageDataFilter extends AbstractBaseRGBImageDataFilte
     /*-{
 		var data = pixa;
 
-		for (var i = 0; i < length; i += 4) {
+		for ( var i = 0; i < length; i += 4) {
 
 			var a = data[i + 3] || 0;
 
@@ -116,7 +116,7 @@ public class RGBIgnoreAlphaImageDataFilter extends AbstractBaseRGBImageDataFilte
 				data[i + 1] = g;
 
 				data[i + 2] = b;
-
+				
 				data[i + 3] = 255;
 			}
 		}

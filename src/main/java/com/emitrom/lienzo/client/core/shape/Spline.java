@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.FastArrayList;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
@@ -51,9 +50,9 @@ public class Spline extends Shape<Spline>
         setControlPoints(points);
     }
 
-    protected Spline(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Spline(JSONObject node)
     {
-        super(ShapeType.SPLINE, node, ctx);
+        super(ShapeType.SPLINE, node);
     }
 
     /**
@@ -346,7 +345,7 @@ public class Spline extends Shape<Spline>
     }
 
     @Override
-    public IFactory<Spline> getFactory()
+    public IFactory<?> getFactory()
     {
         return new SplineFactory();
     }
@@ -357,19 +356,19 @@ public class Spline extends Shape<Spline>
         {
             super(ShapeType.SPLINE);
 
-            addAttribute(Attribute.CURVE_FACTOR);
+            addAttribute(Attribute.CURVE_FACTOR, false);
 
-            addAttribute(Attribute.ANGLE_FACTOR);
+            addAttribute(Attribute.ANGLE_FACTOR, false);
 
-            addAttribute(Attribute.LINE_FLATTEN);
+            addAttribute(Attribute.LINE_FLATTEN, false);
 
             addAttribute(Attribute.CONTROL_POINTS, true);
         }
 
         @Override
-        public Spline create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Spline create(JSONObject node, ValidationContext ctx)
         {
-            return new Spline(node, ctx);
+            return new Spline(node);
         }
     }
 

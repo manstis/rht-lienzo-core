@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
@@ -48,9 +47,9 @@ public class Triangle extends Shape<Triangle>
         setPoints(a, b, c);
     }
 
-    protected Triangle(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Triangle(JSONObject node)
     {
-        super(ShapeType.TRIANGLE, node, ctx);
+        super(ShapeType.TRIANGLE, node);
     }
 
     /**
@@ -110,7 +109,7 @@ public class Triangle extends Shape<Triangle>
     }
 
     @Override
-    public IFactory<Triangle> getFactory()
+    public IFactory<?> getFactory()
     {
         return new TriangleFactory();
     }
@@ -127,9 +126,9 @@ public class Triangle extends Shape<Triangle>
         }
 
         @Override
-        public Triangle create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Triangle create(JSONObject node, ValidationContext ctx)
         {
-            return new Triangle(node, ctx);
+            return new Triangle(node);
         }
     }
 }

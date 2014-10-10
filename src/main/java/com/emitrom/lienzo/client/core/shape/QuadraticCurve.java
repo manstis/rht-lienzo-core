@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
@@ -50,9 +49,9 @@ public class QuadraticCurve extends Shape<QuadraticCurve>
         setControlPoints(new Point2DArray(new Point2D(x, y), new Point2D(controlX, controlY), new Point2D(endX, endY)));
     }
 
-    protected QuadraticCurve(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected QuadraticCurve(JSONObject node)
     {
-        super(ShapeType.QUADRATIC_CURVE, node, ctx);
+        super(ShapeType.QUADRATIC_CURVE, node);
     }
 
     /**
@@ -109,7 +108,7 @@ public class QuadraticCurve extends Shape<QuadraticCurve>
     }
 
     @Override
-    public IFactory<QuadraticCurve> getFactory()
+    public IFactory<?> getFactory()
     {
         return new QuadraticCurveFactory();
     }
@@ -124,9 +123,9 @@ public class QuadraticCurve extends Shape<QuadraticCurve>
         }
 
         @Override
-        public QuadraticCurve create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public QuadraticCurve create(JSONObject node, ValidationContext ctx)
         {
-            return new QuadraticCurve(node, ctx);
+            return new QuadraticCurve(node);
         }
     }
 }

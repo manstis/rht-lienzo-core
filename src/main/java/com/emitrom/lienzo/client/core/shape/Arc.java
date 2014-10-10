@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -63,9 +62,9 @@ public class Arc extends Shape<Arc>
         setRadius(radius).setStartAngle(startAngle).setEndAngle(endAngle).setCounterClockwise(false);
     }
 
-    protected Arc(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Arc(JSONObject node)
     {
-        super(ShapeType.ARC, node, ctx);
+        super(ShapeType.ARC, node);
     }
 
     /**
@@ -76,17 +75,11 @@ public class Arc extends Shape<Arc>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double r = getRadius();
+        context.beginPath();
 
-        if (r > 0)
-        {
-            context.beginPath();
+        context.arc(0, 0, getRadius(), getStartAngle(), getEndAngle(), isCounterClockwise());
 
-            context.arc(0, 0, r, getStartAngle(), getEndAngle(), isCounterClockwise());
-
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -182,7 +175,7 @@ public class Arc extends Shape<Arc>
     }
 
     @Override
-    public IFactory<Arc> getFactory()
+    public IFactory<?> getFactory()
     {
         return new ArcFactory();
     }
@@ -203,9 +196,9 @@ public class Arc extends Shape<Arc>
         }
 
         @Override
-        public Arc create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Arc create(JSONObject node, ValidationContext ctx)
         {
-            return new Arc(node, ctx);
+            return new Arc(node);
         }
     }
 }

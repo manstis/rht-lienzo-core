@@ -18,6 +18,7 @@
 package com.emitrom.lienzo.client.core.shape.json;
 
 import com.emitrom.lienzo.client.core.Attribute;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.Shape;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 
@@ -35,45 +36,24 @@ public abstract class ShapeFactory<T extends IJSONSerializable<T>> extends NodeF
         super(type.getValue());
 
         addAttribute(Attribute.X);
-
         addAttribute(Attribute.Y);
-
         addAttribute(Attribute.ALPHA);
-
         addAttribute(Attribute.FILL);
-
         addAttribute(Attribute.STROKE);
-
         addAttribute(Attribute.STROKE_WIDTH);
-
         addAttribute(Attribute.DRAGGABLE);
-
         addAttribute(Attribute.SCALE);
-
         addAttribute(Attribute.SHEAR);
-
         addAttribute(Attribute.ROTATION);
-
         addAttribute(Attribute.OFFSET);
-
         addAttribute(Attribute.SHADOW);
-
         addAttribute(Attribute.LINE_CAP);
-
         addAttribute(Attribute.LINE_JOIN);
-
         addAttribute(Attribute.MITER_LIMIT);
-
         addAttribute(Attribute.DRAG_CONSTRAINT);
-
         addAttribute(Attribute.DRAG_BOUNDS);
-
-        addAttribute(Attribute.DRAG_MODE);
-
         addAttribute(Attribute.DASH_ARRAY);
-
         addAttribute(Attribute.DASH_OFFSET);
-
         addAttribute(Attribute.FILL_SHAPE_FOR_SELECTION);
     }
 

@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -50,9 +49,9 @@ public class Ellipse extends Shape<Ellipse>
         setWidth(width).setHeight(height);
     }
 
-    protected Ellipse(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Ellipse(JSONObject node)
     {
-        super(ShapeType.ELLIPSE, node, ctx);
+        super(ShapeType.ELLIPSE, node);
     }
 
     @Override
@@ -69,45 +68,41 @@ public class Ellipse extends Shape<Ellipse>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double w = getWidth();
+        double w = getWidth();
 
-        final double h = getHeight();
+        double h = getHeight();
 
-        if ((w > 0) && (h > 0))
-        {
-            double x = -(w / 2);
+        double x = -(w / 2);
 
-            double y = -(h / 2);
+        double y = -(h / 2);
 
-            double ox = (w / 2) * KAPPA; // control point offset horizontal
+        double ox = (w / 2) * KAPPA; // control point offset horizontal
 
-            double oy = (h / 2) * KAPPA; // control point offset vertical
+        double oy = (h / 2) * KAPPA; // control point offset vertical
 
-            double xe = x + w; // x-end
+        double xe = x + w; // x-end
 
-            double ye = y + h; // y-end
+        double ye = y + h; // y-end
 
-            double xm = x + w / 2; // x-middle
+        double xm = x + w / 2; // x-middle
 
-            double ym = y + h / 2; // y-middle
+        double ym = y + h / 2; // y-middle
 
-            context.beginPath();
+        context.beginPath();
 
-            context.moveTo(x, ym);
+        context.moveTo(x, ym);
 
-            context.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+        context.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
 
-            context.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+        context.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
 
-            context.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+        context.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
 
-            context.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+        context.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 
-            context.closePath();
+        context.closePath();
 
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -157,7 +152,7 @@ public class Ellipse extends Shape<Ellipse>
     }
 
     @Override
-    public IFactory<Ellipse> getFactory()
+    public IFactory<?> getFactory()
     {
         return new EllipseFactory();
     }
@@ -174,9 +169,9 @@ public class Ellipse extends Shape<Ellipse>
         }
 
         @Override
-        public Ellipse create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Ellipse create(JSONObject node, ValidationContext ctx)
         {
-            return new Ellipse(node, ctx);
+            return new Ellipse(node);
         }
     }
 }

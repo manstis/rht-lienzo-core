@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import com.emitrom.lienzo.client.core.Attribute;
 import com.emitrom.lienzo.client.core.AttributeType;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
@@ -82,8 +83,4 @@ public interface IFactory<T extends IJSONSerializable<T>>
      * @return AttributeType
      */
     public AttributeType getAttributeType(String attributeName);
-    
-    public void process(IJSONSerializable<?> node, ValidationContext ctx) throws ValidationException;
-    
-    public boolean isPostProcessed();
 }

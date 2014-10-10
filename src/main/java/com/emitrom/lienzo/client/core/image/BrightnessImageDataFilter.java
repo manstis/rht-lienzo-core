@@ -19,12 +19,11 @@ package com.emitrom.lienzo.client.core.image;
 
 import com.emitrom.lienzo.client.core.types.ImageData;
 import com.google.gwt.canvas.dom.client.CanvasPixelArray;
-import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * A class that allows for easy creation of Brightness Filters.
  */
-public class BrightnessImageDataFilter extends AbstractBaseImageDataFilter<BrightnessImageDataFilter>
+public class BrightnessImageDataFilter implements ImageDataFilter
 {
     private double m_brightness;
 
@@ -48,60 +47,32 @@ public class BrightnessImageDataFilter extends AbstractBaseImageDataFilter<Brigh
         {
             return null;
         }
+        final int length = ((source.getWidth() * source.getHeight()) * PIXEL_SZ);
+
         if (copy)
         {
             source = source.copy();
         }
-        if (false == isActive())
-        {
-            return source;
-        }
-        final int length = getLength(source);
-
         final CanvasPixelArray data = source.getData();
 
         if (null == data)
         {
             return source;
         }
-        if (isNative())
+        for (int i = 0; i < length; i += PIXEL_SZ)
         {
-            filter0(data, length, m_brightness);
-        }
-        else
-        {
-            for (int i = 0; i < length; i += PIXEL_SZ)
-            {
-                int r = (int) Math.max(Math.min((data.get(i + R_OFFSET) + (m_brightness * 255) + 0.5), 255), 0);
+            int r = (int) Math.max(Math.min((data.get(i + R_OFFSET) + (m_brightness * 255) + 0.5), 255), 0);
 
-                int g = (int) Math.max(Math.min((data.get(i + G_OFFSET) + (m_brightness * 255) + 0.5), 255), 0);
+            int g = (int) Math.max(Math.min((data.get(i + G_OFFSET) + (m_brightness * 255) + 0.5), 255), 0);
 
-                int b = (int) Math.max(Math.min((data.get(i + B_OFFSET) + (m_brightness * 255) + 0.5), 255), 0);
+            int b = (int) Math.max(Math.min((data.get(i + B_OFFSET) + (m_brightness * 255) + 0.5), 255), 0);
 
-                data.set(i + R_OFFSET, r);
+            data.set(i + R_OFFSET, r);
 
-                data.set(i + G_OFFSET, g);
+            data.set(i + G_OFFSET, g);
 
-                data.set(i + B_OFFSET, b);
-            }
+            data.set(i + B_OFFSET, b);
         }
         return source;
     }
-
-    private final native void filter0(JavaScriptObject pixa, int length, double brightness)
-    /*-{
-		var data = pixa;
-
-		function calculate(v) {
-			return Math.max(Math.min((v + (brightness * 255) + 0.5), 255), 0) | 0;
-		}
-		for (var i = 0; i < length; i += 4) {
-
-			data[i + 0] = calculate(data[i + 0]);
-
-			data[i + 1] = calculate(data[i + 1]);
-
-			data[i + 2] = calculate(data[i + 2]);
-		}
-    }-*/;
 }

@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
@@ -53,9 +52,9 @@ public class BezierCurve extends Shape<BezierCurve>
         setControlPoints(new Point2DArray(new Point2D(x, y), new Point2D(controlX1, controlY1), new Point2D(controlX2, controlY2), new Point2D(endX, endY)));
     }
 
-    protected BezierCurve(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected BezierCurve(JSONObject node)
     {
-        super(ShapeType.BEZIER_CURVE, node, ctx);
+        super(ShapeType.BEZIER_CURVE, node);
     }
 
     /**
@@ -116,7 +115,7 @@ public class BezierCurve extends Shape<BezierCurve>
     }
 
     @Override
-    public IFactory<BezierCurve> getFactory()
+    public IFactory<?> getFactory()
     {
         return new BezierCurveFactory();
     }
@@ -131,9 +130,9 @@ public class BezierCurve extends Shape<BezierCurve>
         }
 
         @Override
-        public BezierCurve create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public BezierCurve create(JSONObject node, ValidationContext ctx)
         {
-            return new BezierCurve(node, ctx);
+            return new BezierCurve(node);
         }
     }
 }

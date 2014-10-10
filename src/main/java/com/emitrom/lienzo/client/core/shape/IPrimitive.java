@@ -26,7 +26,6 @@ import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Transform;
 import com.emitrom.lienzo.client.widget.DragConstraintEnforcer;
 import com.emitrom.lienzo.shared.core.types.DragConstraint;
-import com.emitrom.lienzo.shared.core.types.DragMode;
 
 /**
  * A common interface for all primitives, i.e. {@link Shape} and {@link Group}. 
@@ -269,21 +268,6 @@ public interface IPrimitive<T extends Node<T>> extends IDrawable<T>
      * @return this IPrimitive
      */
     public T setDragBounds(DragBounds bounds);
-    
-    /**
-     * Gets the {@link DragMode} for this node.
-     * 
-     * @return DragMode
-     */
-    public DragMode getDragMode();
-
-    /**
-     * Sets this node's drag mode.
-     * 
-     * @param mode
-     * @return this IPrimitive
-     */
-    public T setDragMode(DragMode mode);
 
     /**
      * Gets the alpha for this node.

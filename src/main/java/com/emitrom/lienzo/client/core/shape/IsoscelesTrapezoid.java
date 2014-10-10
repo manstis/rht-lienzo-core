@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -35,9 +34,9 @@ public class IsoscelesTrapezoid extends Shape<IsoscelesTrapezoid>
         setTopWidth(topwidth).setBottomWidth(bottomwidth).setHeight(height);
     }
 
-    protected IsoscelesTrapezoid(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected IsoscelesTrapezoid(JSONObject node)
     {
-        super(ShapeType.ISOSCELES_TRAPEZOID, node, ctx);
+        super(ShapeType.ISOSCELES_TRAPEZOID, node);
     }
 
     @Override
@@ -49,44 +48,40 @@ public class IsoscelesTrapezoid extends Shape<IsoscelesTrapezoid>
 
         final double bot = getBottomWidth();
 
-        if ((hig > 0) && (top > 0) && (bot > 0))
+        final double sub = Math.abs(top - bot);
+
+        context.beginPath();
+
+        if (0 == sub)
         {
-            context.beginPath();
-
-            final double sub = Math.abs(top - bot);
-
-            if (0 == sub)
+            context.rect(0, 0, top, hig);
+        }
+        else
+        {
+            if (top > bot)
             {
-                context.rect(0, 0, top, hig);
+                context.moveTo(0, 0);
+
+                context.lineTo(top, 0);
+
+                context.lineTo((sub / 2.0) + bot, hig);
+
+                context.lineTo((sub / 2.0), hig);
             }
             else
             {
-                if (top > bot)
-                {
-                    context.moveTo(0, 0);
+                context.moveTo((sub / 2.0), 0);
 
-                    context.lineTo(top, 0);
+                context.lineTo((sub / 2.0) + top, 0);
 
-                    context.lineTo((sub / 2.0) + bot, hig);
+                context.lineTo(bot, hig);
 
-                    context.lineTo((sub / 2.0), hig);
-                }
-                else
-                {
-                    context.moveTo((sub / 2.0), 0);
-
-                    context.lineTo((sub / 2.0) + top, 0);
-
-                    context.lineTo(bot, hig);
-
-                    context.lineTo(0, hig);
-                }
+                context.lineTo(0, hig);
             }
-            context.closePath();
-
-            return true;
         }
-        return false;
+        context.closePath();
+
+        return true;
     }
 
     public IsoscelesTrapezoid setTopWidth(double topwidth)
@@ -126,7 +121,7 @@ public class IsoscelesTrapezoid extends Shape<IsoscelesTrapezoid>
     }
 
     @Override
-    public IFactory<IsoscelesTrapezoid> getFactory()
+    public IFactory<?> getFactory()
     {
         return new IsoscelesTrapezoidFactory();
     }
@@ -145,9 +140,9 @@ public class IsoscelesTrapezoid extends Shape<IsoscelesTrapezoid>
         }
 
         @Override
-        public IsoscelesTrapezoid create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public IsoscelesTrapezoid create(JSONObject node, ValidationContext ctx)
         {
-            return new IsoscelesTrapezoid(node, ctx);
+            return new IsoscelesTrapezoid(node);
         }
     }
 }

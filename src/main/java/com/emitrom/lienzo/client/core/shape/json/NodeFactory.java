@@ -18,6 +18,7 @@
 package com.emitrom.lienzo.client.core.shape.json;
 
 import com.emitrom.lienzo.client.core.Attribute;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.Node;
 import com.emitrom.lienzo.shared.core.types.NodeType;
 
@@ -40,13 +41,9 @@ public abstract class NodeFactory<T extends IJSONSerializable<T>> extends Abstra
         super(typeName);
 
         addAttribute(Attribute.ID);
-
         addAttribute(Attribute.NAME);
-
         addAttribute(Attribute.VISIBLE);
-
         addAttribute(Attribute.LISTENING);
-
         addAttribute(Attribute.TRANSFORM);
     }
 

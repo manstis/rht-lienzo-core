@@ -17,14 +17,14 @@
 
 package com.emitrom.lienzo.client.core.shape.json;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 
 import com.emitrom.lienzo.client.core.Attribute;
 import com.emitrom.lienzo.client.core.AttributeType;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 
 /**
  * AbstractFactory is an abstract implementation of {@IFactory}.
@@ -34,11 +34,11 @@ import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
  */
 public abstract class AbstractFactory<T extends IJSONSerializable<T>> implements IFactory<T>
 {
-    private final LinkedHashMap<String, Attribute> m_requiredsSheet = new LinkedHashMap<String, Attribute>();
+    private final ArrayList<Attribute>       m_requiredAttributes = new ArrayList<Attribute>();
 
-    private final LinkedHashMap<String, Attribute> m_attributeSheet = new LinkedHashMap<String, Attribute>();
+    private final HashMap<String, Attribute> m_attributeMap       = new HashMap<String, Attribute>();
 
-    private String                                 m_typeName;
+    private String                           m_typeName;
 
     protected AbstractFactory(String typeName)
     {
@@ -65,23 +65,16 @@ public abstract class AbstractFactory<T extends IJSONSerializable<T>> implements
     {
         // Allow setting the attribute twice to override the requiredness
         // with a different value.
+        
+        if (!m_attributeMap.containsKey(attr.getProperty())) m_attributeMap.put(attr.getProperty(), attr);
 
-        String prop = attr.getProperty();
-
-        if (false == m_attributeSheet.containsKey(prop))
-        {
-            m_attributeSheet.put(prop, attr);
-        }
         if (required)
         {
-            if (false == m_requiredsSheet.containsKey(prop))
-            {
-                m_requiredsSheet.put(prop, attr);
-            }
+            if (!m_requiredAttributes.contains(attr)) m_requiredAttributes.add(attr);
         }
         else
         {
-            m_requiredsSheet.remove(prop);
+            m_requiredAttributes.remove(attr);
         }
     }
 
@@ -94,38 +87,18 @@ public abstract class AbstractFactory<T extends IJSONSerializable<T>> implements
         addAttribute(attr, false);
     }
 
-    @Override
     public Collection<Attribute> getAttributeSheet()
     {
-        return Collections.unmodifiableCollection(m_attributeSheet.values());
+        return Collections.unmodifiableCollection(m_attributeMap.values());
     }
 
-    @Override
     public Collection<Attribute> getRequiredAttributes()
     {
-        return Collections.unmodifiableCollection(m_requiredsSheet.values());
+        return Collections.unmodifiableCollection(m_requiredAttributes);
     }
 
-    @Override
     public AttributeType getAttributeType(String type)
     {
-        Attribute attr = m_attributeSheet.get(type);
-
-        if (null != attr)
-        {
-            return attr.getType();
-        }
-        return null;
-    }
-
-    @Override
-    public void process(IJSONSerializable<?> node, ValidationContext ctx) throws ValidationException
-    {
-    }
-
-    @Override
-    public boolean isPostProcessed()
-    {
-        return false;
+        return m_attributeMap.get(type).getType();
     }
 }

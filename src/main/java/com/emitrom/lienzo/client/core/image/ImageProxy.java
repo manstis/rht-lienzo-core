@@ -17,349 +17,179 @@
 
 package com.emitrom.lienzo.client.core.image;
 
-import java.util.Collection;
-
 import com.emitrom.lienzo.client.core.Context2D;
-import com.emitrom.lienzo.client.core.shape.AbstractImageShape;
+import com.emitrom.lienzo.client.core.shape.Picture;
 import com.emitrom.lienzo.client.core.types.ImageData;
+import com.emitrom.lienzo.client.core.types.ImageLoader;
+import com.emitrom.lienzo.client.core.types.ImageLoader.ImageJSO;
+import com.emitrom.lienzo.client.core.util.Console;
 import com.emitrom.lienzo.client.core.util.ScratchCanvas;
 import com.emitrom.lienzo.shared.core.types.Color;
 import com.emitrom.lienzo.shared.core.types.DataURLType;
-import com.emitrom.lienzo.shared.core.types.ImageSelectionMode;
 
 /**
- * ImageProxy is used by {@link AbstractImageShape} to load and draw the image.
+ * ImageProxy is used by {@link Picture} to load and draw the image.
  */
-public class ImageProxy<T extends AbstractImageShape<T>> implements ImageDataFilterable<ImageProxy<T>>
+public class ImageProxy
 {
-    private T                                   m_image;
+    private Picture              m_picture;
 
-    private JSImage                             m_jsimg;
+    private ImageJSO             m_imageJSO;
 
-    private final ScratchCanvas                 m_normalImage = new ScratchCanvas(0, 0);
+    private ImageJSO             m_selectionImageJSO;
 
-    private final ScratchCanvas                 m_filterImage = new ScratchCanvas(0, 0);
+    private int                  m_x;
 
-    private final ScratchCanvas                 m_selectImage = new ScratchCanvas(0, 0);
+    private int                  m_y;
 
-    private int                                 m_clip_xpos;
+    private int                  m_width;
 
-    private int                                 m_clip_ypos;
+    private int                  m_height;
 
-    private int                                 m_clip_wide;
+    private int                  m_destinationWidth;
 
-    private int                                 m_clip_high;
+    private int                  m_destinationHeight;
 
-    private int                                 m_dest_wide;
+    private boolean              m_loaded = false;
 
-    private int                                 m_dest_high;
+    private String               m_category;
 
-    private boolean                             m_is_done     = false;
-
-    private boolean                             m_x_forms     = false;
-
-    private String                              m_message     = "";
-
-    private ImageShapeLoadedHandler<T>          m_handler;
-
-    private final ImageDataFilterChain          m_filters     = new ImageDataFilterChain();
-
-    private final RGBIgnoreAlphaImageDataFilter m_ignores;
-
-    private ImageClipBounds                     m_obounds     = null;
+    private PictureLoadedHandler m_handler;
 
     /**
-     * Creates an ImageProxy for the specified {@link AbstractImageShape}.
+     * Creates an ImageProxy for the specified {@link Picture}.
+     * If <code>load</code> is true, it will immediately call {@link #load()}
+     * to load the image.
      * 
-     * @param image {@link AbstractImageShape}
+     * @param picture {@link Picture}
+     * @param load If true, the image will be loaded immediately by 
+     *              calling {@link #load()}.
      */
-    public ImageProxy(T image)
+    public ImageProxy(Picture picture, boolean load)
     {
-        m_image = image;
+        m_picture = picture;
 
-        m_ignores = new RGBIgnoreAlphaImageDataFilter(Color.fromColorString(m_image.getColorKey()));
+        if (load)
+        {
+            load();
+        }
     }
 
     /**
-     * Sets the {@link ImageShapeLoadedHandler} that will be notified when the image is loaded.
+     * Sets the {@link PictureLoadedHandler} that will be notified when the image is loaded.
      * If the image is already loaded, the handler will be invoked immediately.
      * 
-     * @param handler {@link ImageShapeLoadedHandler}
+     * @param handler {@link PictureLoadedHandler}
      */
-    public void setImageShapeLoadedHandler(ImageShapeLoadedHandler<T> handler)
+    public void setPictureLoadedHandler(PictureLoadedHandler handler)
     {
         m_handler = handler;
 
-        if ((null != m_handler) && (m_is_done))
+        if (m_loaded)
         {
-            m_handler.onImageShapeLoaded(m_image);
+            m_handler.onPictureLoaded(m_picture);
         }
     }
 
-    public void reFilter(final ImageShapeFilteredHandler<T> handler)
-    {
-        boolean did_xform = m_x_forms;
-
-        m_x_forms = m_filters.isTransforming();
-
-        doFiltering(m_normalImage, m_filterImage, m_filters);
-
-        if ((false == m_image.isListening()) || (ImageSelectionMode.SELECT_BOUNDS == m_image.getImageSelectionMode()))
-        {
-            handler.onImageShapeFiltered(m_image);
-        }
-        else if (did_xform || m_x_forms)
-        {
-            doFiltering(m_filterImage, m_selectImage, m_ignores);
-
-            handler.onImageShapeFiltered(m_image);
-        }
-        else
-        {
-            handler.onImageShapeFiltered(m_image);
-        }
-    }
-
-    public void unFilter(final ImageShapeFilteredHandler<T> handler)
-    {
-        doFiltering(m_normalImage, m_filterImage, null);
-
-        if ((false == m_image.isListening()) || (ImageSelectionMode.SELECT_BOUNDS == m_image.getImageSelectionMode()))
-        {
-            handler.onImageShapeFiltered(m_image);
-        }
-        else if (m_x_forms)
-        {
-            doFiltering(m_filterImage, m_selectImage, m_ignores);
-
-            handler.onImageShapeFiltered(m_image);
-        }
-        else
-        {
-            handler.onImageShapeFiltered(m_image);
-        }
-    }
-
-    @Override
-    public ImageProxy<T> setFilters(ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        m_filters.setFilters(filter, filters);
-
-        return this;
-    }
-
-    @Override
-    public ImageProxy<T> addFilters(ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        m_filters.addFilters(filter, filters);
-
-        return this;
-    }
-
-    @Override
-    public ImageProxy<T> removeFilters(ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        m_filters.removeFilters(filter, filters);
-
-        return this;
-    }
-
-    @Override
-    public ImageProxy<T> clearFilters()
-    {
-        m_filters.clearFilters();
-
-        return this;
-    }
-
-    @Override
-    public Collection<ImageDataFilter> getFilters()
-    {
-        return m_filters.getFilters();
-    }
-
-    @Override
-    public ImageProxy<T> setFiltersActive(boolean active)
-    {
-        m_filters.setActive(active);
-
-        return this;
-    }
-
-    @Override
-    public boolean areFiltersActive()
-    {
-        return m_filters.areFiltersActive();
-    }
-
-    @Override
-    public ImageProxy<T> setFilters(Iterable<ImageDataFilter> filters)
-    {
-        m_filters.setFilters(filters);
-
-        return this;
-    }
-
-    @Override
-    public ImageProxy<T> addFilters(Iterable<ImageDataFilter> filters)
-    {
-        m_filters.addFilters(filters);
-
-        return this;
-    }
-
-    @Override
-    public ImageProxy<T> removeFilters(Iterable<ImageDataFilter> filters)
-    {
-        m_filters.removeFilters(filters);
-
-        return this;
-    }
-
+    /**
+     * Loads the image.
+     */
     public void load()
     {
-        m_obounds = m_image.getImageClipBounds();
+        final String url = m_picture.getURL();
 
-        m_clip_xpos = m_obounds.getClipXPos();
+        final long start = System.currentTimeMillis();
 
-        m_clip_ypos = m_obounds.getClipYPos();
+        m_category = m_picture.getPictureCategory();
 
-        m_clip_wide = m_obounds.getClipWide();
+        Console.log("registering " + url + " loaded=" + m_loaded + " time=" + (System.currentTimeMillis() - start));
 
-        m_clip_high = m_obounds.getClipHigh();
+        PictureLoader.getInstance().registerProxy(m_category, this);
 
-        m_dest_wide = m_obounds.getDestWide();
+        m_x = (int) Math.round(m_picture.getClippedImageStartX());
 
-        m_dest_high = m_obounds.getDestHigh();
+        m_y = (int) Math.round(m_picture.getClippedImageStartY());
 
-        new ImageLoader(m_image.getURL())
+        // zero means: use the actual image width/height
+
+        m_width = (int) Math.round(m_picture.getClippedImageWidth());
+
+        m_height = (int) Math.round(m_picture.getClippedImageHeight());
+
+        // zero means: use the source width/height
+
+        m_destinationWidth = (int) Math.round(m_picture.getClippedImageDestinationWidth());
+
+        m_destinationHeight = (int) Math.round(m_picture.getClippedImageDestinationHeight());
+
+        new ImageLoader(url)
         {
             @Override
-            public void onLoaded(ImageLoader loader)
+            public void onLoaded(ImageLoader image)
             {
-                m_jsimg = loader.getJSImage();
+                Console.log("loaded " + url + " time=" + (System.currentTimeMillis() - start));
 
-                if (m_clip_wide == 0)
+                m_imageJSO = image.getJSO();
+
+                if (m_width == 0)
                 {
-                    m_clip_wide = m_jsimg.getWidth();
+                    m_width = image.getWidth();
                 }
-                if (m_clip_high == 0)
+                if (m_height == 0)
                 {
-                    m_clip_high = m_jsimg.getHeight();
+                    m_height = image.getHeight();
                 }
-                if (m_dest_wide == 0)
+                if (m_destinationWidth == 0)
                 {
-                    m_dest_wide = m_clip_wide;
+                    m_destinationWidth = m_width;
                 }
-                if (m_dest_high == 0)
+                if (m_destinationHeight == 0)
                 {
-                    m_dest_high = m_clip_high;
+                    m_destinationHeight = m_height;
                 }
-                m_normalImage.setPixelSize(m_dest_wide, m_dest_high);
-
-                m_filterImage.setPixelSize(m_dest_wide, m_dest_high);
-
-                m_selectImage.setPixelSize(m_dest_wide, m_dest_high);
-
-                m_normalImage.clear();
-
-                m_normalImage.getContext().drawImage(m_jsimg, m_clip_xpos, m_clip_ypos, m_clip_wide, m_clip_high, 0, 0, m_dest_wide, m_dest_high);
-
-                m_x_forms = m_filters.isTransforming();
-
-                doFiltering(m_normalImage, m_filterImage, m_filters);
-
-                if ((false == m_image.isListening()) || (ImageSelectionMode.SELECT_BOUNDS == m_image.getImageSelectionMode()))
+                if (false == m_picture.isListening())
                 {
-                    doneLoading(true, "loaded " + m_image.getURL());
+                    doneLoading();
+
+                    return;
                 }
-                else
+                // Prepare the Image for the Selection Layer.
+                // Get ImageData of the image by drawing it in a temporary canvas...
+
+                ScratchCanvas scratch = new ScratchCanvas(m_destinationWidth, m_destinationHeight);
+
+                Context2D context = scratch.getContext();
+
+                context.drawImage(m_imageJSO, m_x, m_y, m_width, m_height, 0, 0, m_destinationWidth, m_destinationHeight);
+
+                ImageData imageData = context.getImageData(0, 0, m_destinationWidth, m_destinationHeight);
+
+                // Now draw the image again, replacing each color with the color key
+
+                scratch.clear();
+
+                Color rgb = Color.fromColorString(m_picture.getColorKey());
+
+                context.putImageData(new RGBIgnoreAlphaImageDataFilter(rgb.getR(), rgb.getG(), rgb.getB()).filter(imageData, true), 0, 0);
+
+                // Load the resulting image from the temporary canvas into the selection Image
+
+                String dataURL = scratch.toDataURL();
+
+                new ImageLoader(dataURL)
                 {
-                    doFiltering(m_filterImage, m_selectImage, m_ignores);
+                    @Override
+                    public void onLoaded(ImageLoader image)
+                    {
+                        m_selectionImageJSO = image.getJSO();
 
-                    doneLoading(true, "loaded " + m_image.getURL());
-                }
-            }
+                        Console.log("loaded selection image " + url + " time=" + (System.currentTimeMillis() - start));
 
-            @Override
-            public void onError(ImageLoader image, String message)
-            {
-                doneLoading(false, message);
+                        doneLoading();
+                    }
+                };
             }
         };
-    }
-
-    private final void doUpdateCheck()
-    {
-        ImageClipBounds bounds = m_image.getImageClipBounds();
-
-        if (m_obounds.isDifferent(bounds))
-        {
-            m_obounds = bounds;
-
-            m_clip_xpos = m_obounds.getClipXPos();
-
-            m_clip_ypos = m_obounds.getClipYPos();
-
-            m_clip_wide = m_obounds.getClipWide();
-
-            m_clip_high = m_obounds.getClipHigh();
-
-            m_dest_wide = m_obounds.getDestWide();
-
-            m_dest_high = m_obounds.getDestHigh();
-
-            if (m_clip_wide == 0)
-            {
-                m_clip_wide = m_jsimg.getWidth();
-            }
-            if (m_clip_high == 0)
-            {
-                m_clip_high = m_jsimg.getHeight();
-            }
-            if (m_dest_wide == 0)
-            {
-                m_dest_wide = m_clip_wide;
-            }
-            if (m_dest_high == 0)
-            {
-                m_dest_high = m_clip_high;
-            }
-            m_normalImage.setPixelSize(m_dest_wide, m_dest_high);
-
-            m_filterImage.setPixelSize(m_dest_wide, m_dest_high);
-
-            m_selectImage.setPixelSize(m_dest_wide, m_dest_high);
-
-            m_normalImage.clear();
-
-            m_normalImage.getContext().drawImage(m_jsimg, m_clip_xpos, m_clip_ypos, m_clip_wide, m_clip_high, 0, 0, m_dest_wide, m_dest_high);
-
-            m_x_forms = m_filters.isTransforming();
-
-            doFiltering(m_normalImage, m_filterImage, m_filters);
-
-            if ((m_image.isListening()) && (ImageSelectionMode.SELECT_NON_TRANSPARENT == m_image.getImageSelectionMode()))
-            {
-                doFiltering(m_filterImage, m_selectImage, m_ignores);
-            }
-        }
-    }
-
-    private final void doFiltering(ScratchCanvas source, ScratchCanvas target, ImageDataFilter filter)
-    {
-        if ((null == filter) || (false == filter.isActive()))
-        {
-            target.clear();
-
-            target.getContext().putImageData(source.getContext().getImageData(0, 0, m_dest_wide, m_dest_high), 0, 0);
-        }
-        else
-        {
-            target.clear();
-
-            target.getContext().putImageData(filter.filter(source.getContext().getImageData(0, 0, m_dest_wide, m_dest_high), false), 0, 0);
-        }
     }
 
     /**
@@ -369,34 +199,43 @@ public class ImageProxy<T extends AbstractImageShape<T>> implements ImageDataFil
      */
     public void drawImage(Context2D context)
     {
-        if (isLoaded())
+        if (m_imageJSO != null)
         {
-            doUpdateCheck();
-
-            if (context.isSelection())
-            {
-                if (ImageSelectionMode.SELECT_BOUNDS == m_image.getImageSelectionMode())
-                {
-                    context.setFillColor(m_image.getColorKey());
-
-                    context.beginPath();
-
-                    context.rect(0, 0, m_dest_wide, m_dest_high);
-
-                    context.fill();
-
-                    context.closePath();
-                }
-                else
-                {
-                    context.drawImage(m_selectImage.getElement(), 0, 0);
-                }
-            }
-            else
-            {
-                context.drawImage(m_filterImage.getElement(), 0, 0);
-            }
+            context.drawImage(m_imageJSO, m_x, m_y, m_width, m_height, 0, 0, m_destinationWidth, m_destinationHeight);
         }
+    }
+
+    /**
+     * Draws the selection layer image in the {@link Context2D}.
+     * 
+     * @param context {@link Context2D}
+     */
+    public void drawSelectionImage(Context2D context)
+    {
+        if (m_selectionImageJSO != null)
+        {
+            context.drawImage(m_selectionImageJSO, 0, 0);
+        }
+    }
+
+    /**
+     * Returns the (main) image (JavaSciptObject).
+     * 
+     * @return {@link ImageJSO}
+     */
+    public ImageJSO getImageJSO()
+    {
+        return m_imageJSO;
+    }
+
+    /**
+     * Returns the image (JavaSciptObject) for the selection layer.
+     * 
+     * @return {@link ImageJSO}
+     */
+    public ImageJSO getSelectionImageJSO()
+    {
+        return m_selectionImageJSO;
     }
 
     /**
@@ -407,12 +246,7 @@ public class ImageProxy<T extends AbstractImageShape<T>> implements ImageDataFil
      */
     public boolean isLoaded()
     {
-        return m_is_done;
-    }
-
-    public String getLoadedMessage()
-    {
-        return m_message;
+        return m_loaded;
     }
 
     /**
@@ -423,11 +257,19 @@ public class ImageProxy<T extends AbstractImageShape<T>> implements ImageDataFil
      */
     public ImageData getImageData()
     {
-        if (false == isLoaded())
+        if (false == m_loaded)
         {
             return null;
         }
-        return m_filterImage.getContext().getImageData(0, 0, m_dest_wide, m_dest_high);
+        ScratchCanvas scratch = new ScratchCanvas(m_destinationWidth, m_destinationHeight);
+
+        Context2D context = scratch.getContext();
+
+        context.drawImage(m_imageJSO, m_x, m_y, m_width, m_height, 0, 0, m_destinationWidth, m_destinationHeight);
+
+        ImageData imageData = context.getImageData(0, 0, m_destinationWidth, m_destinationHeight);
+
+        return imageData;
     }
 
     /**
@@ -438,41 +280,31 @@ public class ImageProxy<T extends AbstractImageShape<T>> implements ImageDataFil
      */
     public String toDataURL(DataURLType mimeType)
     {
-        if (false == isLoaded())
+        if (false == m_loaded)
         {
             return null;
         }
+        ScratchCanvas scratch = new ScratchCanvas(m_destinationWidth, m_destinationHeight);
+
+        Context2D context = scratch.getContext();
+
+        context.drawImage(m_imageJSO, m_x, m_y, m_width, m_height, 0, 0, m_destinationWidth, m_destinationHeight);
+
         if (mimeType == null)
         {
-            mimeType = DataURLType.PNG;
+            return scratch.toDataURL();
         }
-        return m_filterImage.toDataURL(mimeType);
+        else return scratch.toDataURL(mimeType);
     }
 
-    protected void doneLoading(boolean loaded, String message)
+    protected void doneLoading()
     {
-        m_is_done = loaded;
-
-        m_message = message;
+        m_loaded = true;
 
         if (m_handler != null)
         {
-            m_handler.onImageShapeLoaded(m_image);
+            m_handler.onPictureLoaded(m_picture);
         }
-    }
-
-    public int getWidth()
-    {
-        return m_dest_wide;
-    }
-
-    public int getHeight()
-    {
-        return m_dest_high;
-    }
-
-    public JSImage getJSImage()
-    {
-        return m_jsimg;
+        PictureLoader.getInstance().doneLoading(m_category, ImageProxy.this);
     }
 }

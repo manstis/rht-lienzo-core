@@ -17,10 +17,10 @@
 
 package com.emitrom.lienzo.client.core;
 
-import com.emitrom.lienzo.client.core.image.JSImage;
 import com.emitrom.lienzo.client.core.types.DashArray;
 import com.emitrom.lienzo.client.core.types.ImageData;
 import com.emitrom.lienzo.client.core.types.ImageDataPixelColor;
+import com.emitrom.lienzo.client.core.types.ImageLoader.ImageJSO;
 import com.emitrom.lienzo.client.core.types.LinearGradient;
 import com.emitrom.lienzo.client.core.types.PatternGradient;
 import com.emitrom.lienzo.client.core.types.RadialGradient;
@@ -160,16 +160,6 @@ public class Context2D
         m_jso.transform(d0, d1, d2, d3, d4, d5);
     }
 
-    public void setTransform(double d0, double d1, double d2, double d3, double d4, double d5)
-    {
-        m_jso.setTransform(d0, d1, d2, d3, d4, d5);
-    };
-
-    public void setToIdentityTransform()
-    {
-        m_jso.setToIdentityTransform();
-    };
-
     public void moveTo(double x, double y)
     {
         m_jso.moveTo(x, y);
@@ -203,11 +193,6 @@ public class Context2D
     public void transform(Transform transform)
     {
         m_jso.transform(transform);
-    }
-
-    public void setTransform(Transform transform)
-    {
-        m_jso.setTransform(transform);
     }
 
     public void setTextFont(String font)
@@ -351,17 +336,17 @@ public class Context2D
         return m_jso;
     }
 
-    public void drawImage(JSImage image, double x, double y)
+    public void drawImage(ImageJSO image, double x, double y)
     {
         m_jso.drawImage(image, x, y);
     }
 
-    public void drawImage(JSImage image, double x, double y, double w, double h)
+    public void drawImage(ImageJSO image, double x, double y, double w, double h)
     {
         m_jso.drawImage(image, x, y, w, h);
     }
 
-    public void drawImage(JSImage image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh)
+    public void drawImage(ImageJSO image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh)
     {
         m_jso.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
     }

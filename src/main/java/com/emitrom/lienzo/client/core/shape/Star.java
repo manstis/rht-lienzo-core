@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -49,9 +48,9 @@ public class Star extends Shape<Star>
         setStarPoints(points).setInnerRadius(innerRadius).setOuterRadius(outerRadius);
     }
 
-    protected Star(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Star(JSONObject node)
     {
-        super(ShapeType.STAR, node, ctx);
+        super(ShapeType.STAR, node);
     }
 
     /**
@@ -68,7 +67,7 @@ public class Star extends Shape<Star>
 
         final double or = getOuterRadius();
 
-        if ((s > 4) && (ir > 0) && (or > 0) && (or > ir))
+        if ((s > 4) && (ir != 0) && (or != 0) && (or > ir))
         {
             context.beginPath();
 
@@ -159,7 +158,7 @@ public class Star extends Shape<Star>
     }
 
     @Override
-    public IFactory<Star> getFactory()
+    public IFactory<?> getFactory()
     {
         return new StarFactory();
     }
@@ -170,17 +169,17 @@ public class Star extends Shape<Star>
         {
             super(ShapeType.STAR);
 
-            addAttribute(Attribute.STAR_POINTS, true);
+            addAttribute(Attribute.STAR_POINTS);
 
-            addAttribute(Attribute.INNER_RADIUS, true);
+            addAttribute(Attribute.INNER_RADIUS);
 
-            addAttribute(Attribute.OUTER_RADIUS, true);
+            addAttribute(Attribute.OUTER_RADIUS);
         }
 
         @Override
-        public Star create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Star create(JSONObject node, ValidationContext ctx)
         {
-            return new Star(node, ctx);
+            return new Star(node);
         }
     }
 }

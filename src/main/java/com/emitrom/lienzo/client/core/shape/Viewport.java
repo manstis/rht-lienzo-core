@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2012-2014 Emitrom LLC. All rights reserved. 
+   Copyright (c) 2012 Emitrom LLC. All rights reserved. 
    For licensing questions, please contact us at licensing@emitrom.com
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,6 @@ import com.emitrom.lienzo.client.core.mediator.IMediator;
 import com.emitrom.lienzo.client.core.mediator.Mediators;
 import com.emitrom.lienzo.client.core.shape.json.ContainerNodeFactory;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
-import com.emitrom.lienzo.client.core.shape.json.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.json.JSONDeserializer;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
@@ -60,7 +59,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Serves as a container for {@link Scene}
@@ -76,33 +74,15 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
 
     private int              m_high    = 0;
 
-    private Widget           m_owns    = null;
-
     private final DivElement m_element = Document.get().createDivElement();
 
-    private Scene            m_drag    = new Scene();
+    private final Scene      m_drag    = new Scene();
 
-    private Scene            m_main    = null;
+    private final Scene      m_main    = new Scene();
 
-    private Scene            m_back    = new Scene();
+    private final Scene      m_back    = new Scene();
 
     private Mediators        m_mediators;
-
-    public Viewport()
-    {
-        this(0, 0);
-    }
-
-    public Viewport(Scene main, int wide, int high)
-    {
-        super(NodeType.VIEWPORT);
-
-        m_wide = wide;
-
-        m_high = high;
-
-        setSceneAndState(main);
-    }
 
     /**
      * Constructor. Creates an instance of a viewport.
@@ -118,19 +98,9 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
 
         m_high = high;
 
-        setSceneAndState(new Scene());
-    }
-
-    protected Viewport(JSONObject node, ValidationContext ctx) throws ValidationException
-    {
-        super(NodeType.VIEWPORT, node, ctx);
-    }
-
-    private final void setSceneAndState(Scene main)
-    {
         add(m_back);
 
-        add(m_main = main);
+        add(m_main);
 
         add(m_drag);
 
@@ -138,31 +108,14 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
 
         m_mediators = new Mediators(this);
 
-        Transform transform = getTransform();
+        // Zoom mediators rely on the Transform not being null.
 
-        if (null == transform)
-        {
-            // Zoom mediators rely on the Transform not being null.
-
-            setTransform(new Transform());
-        }
+        setTransform(new Transform());
     }
 
-    public final boolean adopt(Widget owns)
+    protected Viewport(JSONObject node)
     {
-        if (null == m_owns)
-        {
-            m_owns = owns;
-
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public final Viewport asViewport()
-    {
-        return this;
+        super(NodeType.VIEWPORT);
     }
 
     /**
@@ -170,7 +123,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * 
      * @return int
      */
-    public final int getWidth()
+    public int getWidth()
     {
         return m_wide;
     }
@@ -180,7 +133,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * 
      * @return int
      */
-    public final int getHeight()
+    public int getHeight()
     {
         return m_high;
     }
@@ -190,7 +143,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * 
      * @return {@link DivElement}
      */
-    public final DivElement getElement()
+    public DivElement getElement()
     {
         return m_element;
     }
@@ -202,7 +155,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @param high
      * @return Viewpor this viewport
      */
-    public final Viewport setPixelSize(int wide, int high)
+    public Viewport setPixelSize(int wide, int high)
     {
         m_wide = wide;
 
@@ -212,11 +165,11 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
 
         m_element.getStyle().setHeight(high, Unit.PX);
 
-        final FastArrayList<Scene> scenes = getChildNodes();
+        FastArrayList<Scene> scenes = getChildNodes();
 
         if (null != scenes)
         {
-            final int size = scenes.length();
+            int size = scenes.length();
 
             for (int i = 0; i < size; i++)
             {
@@ -237,18 +190,10 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @param scene
      */
     @Override
-    public final Viewport add(Scene scene)
+    public void add(Scene scene)
     {
-        if ((null != scene) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != scene) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
-            if (false == scene.adopt(this))
-            {
-                throw new IllegalArgumentException("Scene is already adopted.");
-            }
-            if (length() > 2)
-            {
-                throw new IllegalArgumentException("Too many Scene objects is Viewport.");
-            }
             DivElement element = scene.getElement();
 
             scene.setPixelSize(m_wide, m_high);
@@ -261,7 +206,6 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
 
             super.add(scene);
         }
-        return this;
     }
 
     public HandlerRegistration addOrientationChangeHandler(OrientationChangeHandler handler)
@@ -284,13 +228,13 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         return addEnsureHandler(ResizeEndEvent.TYPE, handler);
     }
 
-    public final void draw()
+    public void draw()
     {
-        final FastArrayList<Scene> scenes = getChildNodes();
+        FastArrayList<Scene> scenes = getChildNodes();
 
         if (null != scenes)
         {
-            final int size = scenes.length();
+            int size = scenes.length();
 
             for (int i = 0; i < size; i++)
             {
@@ -310,7 +254,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return {@link Scene}
      */
     @Override
-    public final Scene getScene()
+    public Scene getScene()
     {
         return m_main;
     }
@@ -321,7 +265,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @param layer
      * @return this Viewport
      */
-    public final Viewport setBackgroundLayer(Layer layer)
+    public Viewport setBackgroundLayer(Layer layer)
     {
         m_back.removeAll();
 
@@ -335,13 +279,13 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * 
      * @return {@link Layer} 
      */
-    public final Layer getDraglayer()
+    public Layer getDraglayer()
     {
         return m_drag.getChildNodes().get(0);
     }
 
     @Override
-    public final Viewport getViewport()
+    public Viewport getViewport()
     {
         return this;
     }
@@ -350,20 +294,16 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * No-op; this method has no effect. Simply overriden but in reality Scenes will not be removed from this {@link Viewport}
      */
     @Override
-    public final Viewport remove(Scene scene)
+    public void remove(Scene scene)
     {
-        return this;
     }
 
     /**
      * No-op; this method has no effect. Simply overriden but in reality Scenes will not be removed from this {@link Viewport}
      */
     @Override
-    public final Viewport removeAll()
+    public void removeAll()
     {
-        getScene().removeAll();
-
-        return this;
     }
 
     /**
@@ -372,7 +312,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return this Viewport
      */
     @Override
-    public final Viewport moveUp()
+    public Viewport moveUp()
     {
         return this;
     }
@@ -383,7 +323,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return this Viewport
      */
     @Override
-    public final Viewport moveDown()
+    public Viewport moveDown()
     {
         return this;
     }
@@ -394,7 +334,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return this Viewport
      */
     @Override
-    public final Viewport moveToTop()
+    public Viewport moveToTop()
     {
         return this;
     }
@@ -405,7 +345,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return this Viewport
      */
     @Override
-    public final Viewport moveToBottom()
+    public Viewport moveToBottom()
     {
         return this;
     }
@@ -419,7 +359,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @param width
      * @param height
      */
-    public final void viewGlobalArea(double x, double y, double width, double height)
+    public void viewGlobalArea(double x, double y, double width, double height)
     {
         if (width <= 0 || height <= 0)
         {
@@ -459,7 +399,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @param width
      * @param height
      */
-    public final void viewLocalArea(double x, double y, double width, double height)
+    public void viewLocalArea(double x, double y, double width, double height)
     {
         Transform t = Transform.createViewportTransform(x, y, width, height, m_wide, m_high);
 
@@ -478,7 +418,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return this Viewport
      */
     @Override
-    public final Viewport setTransform(Transform transform)
+    public Viewport setTransform(Transform transform)
     {
         super.setTransform(transform);
 
@@ -493,7 +433,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * @return {@link JSONObject}
      */
     @Override
-    public final JSONObject toJSONObject()
+    public JSONObject toJSONObject()
     {
         JSONObject object = new JSONObject();
 
@@ -503,7 +443,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
 
         JSONArray children = new JSONArray();
 
-        children.set(0, getScene().toJSONObject());
+        children.set(0, m_main.toJSONObject());
 
         object.put("children", children);
 
@@ -573,7 +513,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
     }
 
     @Override
-    public final ArrayList<Node<?>> search(INodeFilter filter)
+    public ArrayList<Node<?>> search(INodeFilter filter)
     {
         ArrayList<Node<?>> find = new ArrayList<Node<?>>();
 
@@ -592,7 +532,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
     }
 
     @Override
-    public final Iterator<Scene> iterator()
+    public Iterator<Scene> iterator()
     {
         return new ViewportIterator();
     }
@@ -603,7 +543,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * 
      * @return Mediators
      */
-    public final Mediators getMediators()
+    public Mediators getMediators()
     {
         return m_mediators;
     }
@@ -616,7 +556,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
      * 
      * @param mediator IMediator
      */
-    public final void pushMediator(IMediator mediator)
+    public void pushMediator(IMediator mediator)
     {
         m_mediators.push(mediator);
     }
@@ -634,7 +574,13 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
     }
 
     @Override
-    public final IFactory<Viewport> getFactory()
+    public boolean isValidForContainer(IJSONSerializable<?> node)
+    {
+        return (node instanceof Scene);
+    }
+
+    @Override
+    public IFactory<?> getFactory()
     {
         return new ViewportFactory();
     }
@@ -652,47 +598,19 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         }
 
         @Override
-        public final Viewport create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Viewport create(JSONObject node, ValidationContext ctx) throws ValidationException
         {
-            Viewport container = new Viewport(node, ctx);
+            Viewport g = new Viewport(node);
 
-            JSONDeserializer.getInstance().deserializeChildren(container, node, this, ctx);
+            JSONDeserializer.getInstance().deserializeChildren(g, node, this, ctx);
 
-            return container;
+            return g;
         }
 
         @Override
-        public final boolean addNodeForContainer(IContainer<?, ?> container, Node<?> node, ValidationContext ctx)
+        public boolean isValidForContainer(IContainer<?> g, IJSONSerializable<?> node)
         {
-            if (node.getNodeType() == NodeType.SCENE)
-            {
-                if (container.length() > 2)
-                {
-                    try
-                    {
-                        ctx.addError("Too many Scene objects is Viewport");
-                    }
-                    catch (ValidationException e)
-                    {
-                        return false;
-                    }
-                }
-                container.asViewport().setSceneAndState(node.asScene());
-
-                return true;
-            }
-            else
-            {
-                try
-                {
-                    ctx.addBadTypeError(node.getClass().getName() + " is not a Scene");
-                }
-                catch (ValidationException e)
-                {
-                    return false;
-                }
-            }
-            return false;
+            return g.isValidForContainer(node);
         }
     }
 
@@ -701,13 +619,13 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         private int m_indx = 0;
 
         @Override
-        public final boolean hasNext()
+        public boolean hasNext()
         {
             return (m_indx != 1);
         }
 
         @Override
-        public final Scene next()
+        public Scene next()
         {
             if (m_indx >= 1)
             {
@@ -719,7 +637,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         }
 
         @Override
-        public final void remove()
+        public void remove()
         {
             throw new IllegalStateException();
         }
@@ -739,11 +657,11 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         }
 
         @Override
-        public final CanvasElement getCanvasElement()
+        public CanvasElement getCanvasElement()
         {
             CanvasElement element = null;
 
-            if (LienzoGlobals.get().isCanvasSupported())
+            if (LienzoGlobals.getInstance().isCanvasSupported())
             {
                 element = super.getCanvasElement();
 
@@ -759,9 +677,9 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         }
 
         @Override
-        public final void setPixelSize(int wide, int high)
+        public void setPixelSize(int wide, int high)
         {
-            if (LienzoGlobals.get().isCanvasSupported())
+            if (LienzoGlobals.getInstance().isCanvasSupported())
             {
                 super.setPixelSize(wide, high);
 
@@ -778,7 +696,7 @@ public class Viewport extends ContainerNode<Scene, Viewport> implements IJSONSer
         }
 
         @Override
-        public final Context2D getContext()
+        public Context2D getContext()
         {
             return m_context;
         }

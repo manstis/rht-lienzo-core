@@ -17,10 +17,10 @@
 
 package com.emitrom.lienzo.client.core;
 
-import com.emitrom.lienzo.client.core.image.JSImage;
 import com.emitrom.lienzo.client.core.types.DashArray;
 import com.emitrom.lienzo.client.core.types.DashArray.DashArrayJSO;
 import com.emitrom.lienzo.client.core.types.ImageData;
+import com.emitrom.lienzo.client.core.types.ImageLoader.ImageJSO;
 import com.emitrom.lienzo.client.core.types.LinearGradient;
 import com.emitrom.lienzo.client.core.types.LinearGradient.LinearGradientJSO;
 import com.emitrom.lienzo.client.core.types.PatternGradient;
@@ -217,6 +217,11 @@ public final class NativeContext2D extends JavaScriptObject
 		this.lineWidth = width;
     }-*/;
 
+    public final native void transform(double d0, double d1, double d2, double d3, double d4, double d5)
+    /*-{
+		this.transform(d0, d1, d2, d3, d4, d5);
+    }-*/;
+
     public final void setFillGradient(LinearGradient gradient)
     {
         this.setFillGradient(gradient.getJSO());
@@ -273,31 +278,6 @@ public final class NativeContext2D extends JavaScriptObject
     private final native void transform(TransformJSO jso)
     /*-{
 		this.transform(jso[0], jso[1], jso[2], jso[3], jso[4], jso[5]);
-    }-*/;
-
-    public final native void transform(double d0, double d1, double d2, double d3, double d4, double d5)
-    /*-{
-		this.transform(d0, d1, d2, d3, d4, d5);
-    }-*/;
-
-    public final void setTransform(Transform transform)
-    {
-        this.setTransform(transform.getJSO());
-    }
-
-    private final native void setTransform(TransformJSO jso)
-    /*-{
-		this.setTransform(jso[0], jso[1], jso[2], jso[3], jso[4], jso[5]);
-    }-*/;
-
-    public final native void setTransform(double d0, double d1, double d2, double d3, double d4, double d5)
-    /*-{
-		this.setTransform(d0, d1, d2, d3, d4, d5);
-    }-*/;
-
-    public final native void setToIdentityTransform()
-    /*-{
-		this.setTransform(1, 0, 0, 1, 0, 0);
     }-*/;
 
     public final native void setTextFont(String font)
@@ -384,17 +364,17 @@ public final class NativeContext2D extends JavaScriptObject
 		return this.isPointInPath(x, y);
     }-*/;
 
-    public final native ImageData getImageData(double x, double y, double width, double height)
+    public final native ImageData getImageData(int x, int y, int width, int height)
     /*-{
 		return this.getImageData(x, y, width, height);
     }-*/;
 
-    public final native void putImageData(ImageData imageData, double x, double y)
+    public final native void putImageData(ImageData imageData, int x, int y)
     /*-{
 		this.putImageData(imageData, x, y);
     }-*/;
 
-    public final native void putImageData(ImageData imageData, double x, double y, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight)
+    public final native void putImageData(ImageData imageData, int x, int y, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight)
     /*-{
 		this.putImageData(imageData, x, y, dirtyX, dirtyY, dirtyWidth,
 				dirtyHeight);
@@ -411,17 +391,17 @@ public final class NativeContext2D extends JavaScriptObject
 		return this.measureText(text);
     }-*/;
 
-    public final native void drawImage(JSImage image, double x, double y)
+    public final native void drawImage(ImageJSO image, double x, double y)
     /*-{
 		this.drawImage(image, x, y);
     }-*/;
 
-    public final native void drawImage(JSImage image, double x, double y, double w, double h)
+    public final native void drawImage(ImageJSO image, double x, double y, double w, double h)
     /*-{
 		this.drawImage(image, x, y, w, h);
     }-*/;
 
-    public final native void drawImage(JSImage image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh)
+    public final native void drawImage(ImageJSO image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh)
     /*-{
 		this.imageSmoothingEnabled = true;
 

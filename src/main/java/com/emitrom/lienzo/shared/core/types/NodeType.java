@@ -22,42 +22,33 @@ package com.emitrom.lienzo.shared.core.types;
  */
 public class NodeType
 {
-    public static final NodeType SCENE      = new NodeType("Scene", false);
+    public static final NodeType SCENE      = new NodeType("Scene");
 
-    public static final NodeType LAYER      = new NodeType("Layer", false);
+    public static final NodeType LAYER      = new NodeType("Layer");
 
-    public static final NodeType GROUP      = new NodeType("Group", true);
+    public static final NodeType GROUP      = new NodeType("Group");
 
-    public static final NodeType SHAPE      = new NodeType("Shape", true);
+    public static final NodeType SHAPE      = new NodeType("Shape");
 
-    public static final NodeType VIEWPORT   = new NodeType("Viewport", false);
+    public static final NodeType VIEWPORT   = new NodeType("Viewport");
 
-    public static final NodeType GRID_LAYER = new NodeType("GridLayer", false);
+    public static final NodeType GRID_LAYER = new NodeType("GridLayer");
 
-    private final String         m_valu;
+    private final String         m_value;
 
-    private final boolean        m_prim;
-
-    public NodeType(String valu, boolean prim)
+    public NodeType(String value)
     {
-        m_valu = valu;
-
-        m_prim = prim;
+        m_value = value;
     }
 
     @Override
     public final String toString()
     {
-        return m_valu;
+        return m_value;
     }
 
     public final String getValue()
     {
-        return m_valu;
-    }
-
-    public final boolean isPrimitive()
-    {
-        return m_prim;
+        return m_value;
     }
 }

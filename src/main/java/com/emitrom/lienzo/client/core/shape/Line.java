@@ -23,7 +23,6 @@ import com.emitrom.lienzo.client.core.LienzoGlobals;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.DashArray;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
@@ -61,9 +60,9 @@ public class Line extends Shape<Line>
         setPoints(new Point2DArray(new Point2D(x1, y1), new Point2D(x2, y2)));
     }
 
-    protected Line(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Line(JSONObject node)
     {
-        super(ShapeType.LINE, node, ctx);
+        super(ShapeType.LINE, node);
     }
 
     /**
@@ -80,7 +79,7 @@ public class Line extends Shape<Line>
         {
             if (attr.isDefined(Attribute.DASH_ARRAY))
             {
-                if (false == LienzoGlobals.get().isNativeLineDashSupported())
+                if (false == LienzoGlobals.getInstance().isNativeLineDashSupported())
                 {
                     DashArray dash = getDashArray();
 
@@ -224,7 +223,7 @@ public class Line extends Shape<Line>
     }
 
     @Override
-    public IFactory<Line> getFactory()
+    public IFactory<?> getFactory()
     {
         return new LineFactory();
     }
@@ -239,9 +238,9 @@ public class Line extends Shape<Line>
         }
 
         @Override
-        public Line create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Line create(JSONObject node, ValidationContext ctx)
         {
-            return new Line(node, ctx);
+            return new Line(node);
         }
     }
 }

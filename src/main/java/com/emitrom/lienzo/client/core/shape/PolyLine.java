@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
@@ -46,9 +45,9 @@ public class PolyLine extends Shape<PolyLine>
         setPoints(points);
     }
 
-    protected PolyLine(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected PolyLine(JSONObject node)
     {
-        super(ShapeType.POLYLINE, node, ctx);
+        super(ShapeType.POLYLINE, node);
     }
 
     /**
@@ -110,7 +109,7 @@ public class PolyLine extends Shape<PolyLine>
     }
 
     @Override
-    public IFactory<PolyLine> getFactory()
+    public IFactory<?> getFactory()
     {
         return new PolyLineFactory();
     }
@@ -125,9 +124,9 @@ public class PolyLine extends Shape<PolyLine>
         }
 
         @Override
-        public PolyLine create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public PolyLine create(JSONObject node, ValidationContext ctx)
         {
-            return new PolyLine(node, ctx);
+            return new PolyLine(node);
         }
     }
 }

@@ -18,6 +18,7 @@
 package com.emitrom.lienzo.client.core.shape.json;
 
 import com.emitrom.lienzo.client.core.shape.IContainer;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 import com.emitrom.lienzo.shared.core.types.NodeType;
 
 /**
@@ -28,7 +29,7 @@ import com.emitrom.lienzo.shared.core.types.NodeType;
  * @param <T>
  * @since 1.1
  */
-public abstract class ContainerNodeFactory<T extends IJSONSerializable<T> & IContainer<T, ?>> extends NodeFactory<T> implements IContainerFactory
+public abstract class ContainerNodeFactory<T extends IJSONSerializable<T> & IContainer<?>> extends NodeFactory<T> implements IContainerFactory
 {
     protected ContainerNodeFactory(NodeType type)
     {

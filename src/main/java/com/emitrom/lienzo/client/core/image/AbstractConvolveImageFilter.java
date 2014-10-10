@@ -22,21 +22,11 @@ import com.google.gwt.canvas.dom.client.CanvasPixelArray;
 
 public abstract class AbstractConvolveImageFilter implements ImageDataFilter
 {
-    private String         m_name   = null;
-
-    private boolean        m_active = true;
-
-    private final double[] m_weights;      // changed back because sharpen filter stopped working, TODO: reinvestigate
+    private final double[] m_weights; // changed back because sharpen filter stopped working, TODO: reinvestigate
 
     protected AbstractConvolveImageFilter(double[] weights)
     {
         m_weights = weights;
-    }
-
-    @Override
-    public boolean isTransforming()
-    {
-        return true;
     }
 
     @Override
@@ -45,14 +35,6 @@ public abstract class AbstractConvolveImageFilter implements ImageDataFilter
         if (null == source)
         {
             return null;
-        }
-        if (false == isActive())
-        {
-            if (copy)
-            {
-                source = source.copy();
-            }
-            return source;
         }
         ImageData output = source.copy();
 
@@ -122,33 +104,5 @@ public abstract class AbstractConvolveImageFilter implements ImageDataFilter
             }
         }
         return output;
-    }
-
-    @Override
-    public boolean isActive()
-    {
-        return m_active;
-    }
-
-    @Override
-    public void setActive(boolean active)
-    {
-        m_active = active;
-    }
-    
-    @Override
-    public String getName()
-    {
-        if (null == m_name)
-        {
-            return getClass().getSimpleName();
-        }
-        return m_name;
-    }
-
-    @Override
-    public void setName(String name)
-    {
-        m_name = name;
     }
 }

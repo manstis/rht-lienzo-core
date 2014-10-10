@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2012-2014 Emitrom LLC. All rights reserved. 
+   Copyright (c) 2012 Emitrom LLC. All rights reserved. 
    For licensing questions, please contact us at licensing@emitrom.com
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import com.emitrom.lienzo.client.core.LienzoGlobals;
 import com.emitrom.lienzo.client.core.shape.json.ContainerNodeFactory;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
-import com.emitrom.lienzo.client.core.shape.json.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.json.JSONDeserializer;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
@@ -55,8 +54,6 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
     private int              m_high    = 0;
 
-    private Viewport         m_owns    = null;
-
     private final DivElement m_element = Document.get().createDivElement();
 
     /**
@@ -67,20 +64,9 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
         super(NodeType.SCENE);
     }
 
-    protected Scene(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Scene(JSONObject node)
     {
-        super(NodeType.SCENE, node, ctx);
-    }
-
-    public final boolean adopt(Viewport owns)
-    {
-        if ((null == m_owns) || (m_owns == owns))
-        {
-            m_owns = owns;
-
-            return true;
-        }
-        return false;
+        super(NodeType.SCENE, node);
     }
 
     /**
@@ -146,7 +132,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @param high
      * @return this Scene
      */
-    public final Scene setPixelSize(int wide, int high)
+    public Scene setPixelSize(int wide, int high)
     {
         m_wide = wide;
 
@@ -156,11 +142,11 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
         m_element.getStyle().setHeight(high, Unit.PX);
 
-        final FastArrayList<Layer> layers = getChildNodes();
+        FastArrayList<Layer> layers = getChildNodes();
 
         if (null != layers)
         {
-            final int size = layers.length();
+            int size = layers.length();
 
             for (int i = 0; i < size; i++)
             {
@@ -181,7 +167,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return Scene
      */
     @Override
-    public final Scene getScene()
+    public Scene getScene()
     {
         return this;
     }
@@ -192,7 +178,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return Scene
      */
     @Override
-    public final Scene asScene()
+    public Scene asScene()
     {
         return this;
     }
@@ -203,7 +189,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return Scene
      */
     @Override
-    public final IContainer<Scene, Layer> asContainer()
+    public IContainer<Layer> asContainer()
     {
         return this;
     }
@@ -213,7 +199,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * 
      * @return Layer
      */
-    public final Layer getTopLayer()
+    public Layer getTopLayer()
     {
         FastArrayList<Layer> layers = getChildNodes();
 
@@ -225,13 +211,13 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
     /**
      * Iterates over the list of {@link Layer} and draws them all.
      */
-    public final void draw()
+    public void draw()
     {
-        final FastArrayList<Layer> layers = getChildNodes();
+        FastArrayList<Layer> layers = getChildNodes();
 
         if (null != layers)
         {
-            final int size = layers.length();
+            int size = layers.length();
 
             for (int i = 0; i < size; i++)
             {
@@ -258,7 +244,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
     {
         if (isVisible())
         {
-            final FastArrayList<Layer> layers = getChildNodes();
+            FastArrayList<Layer> layers = getChildNodes();
 
             if (null != layers)
             {
@@ -266,7 +252,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
                 for (int i = size - 1; i >= 0; i--)
                 {
-                    final Layer layer = layers.get(i);
+                    Layer layer = layers.get(i);
 
                     if (null != layer)
                     {
@@ -288,11 +274,11 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      */
     public final void fireEvent(GwtEvent<?> event)
     {
-        final FastArrayList<Layer> layers = getChildNodes();
+        FastArrayList<Layer> layers = getChildNodes();
 
         if (null != layers)
         {
-            final int size = layers.length();
+            int size = layers.length();
 
             for (int i = size - 1; i >= 0; i--)
             {
@@ -312,21 +298,21 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return JSONObject
      */
     @Override
-    public final JSONObject toJSONObject()
+    public JSONObject toJSONObject()
     {
-        final JSONObject object = new JSONObject();
+        JSONObject object = new JSONObject();
 
         object.put("type", new JSONString(getNodeType().getValue()));
 
         object.put("attributes", new JSONObject(getAttributes()));
 
-        final FastArrayList<Layer> list = getChildNodes();
+        FastArrayList<Layer> list = getChildNodes();
 
-        final JSONArray children = new JSONArray();
+        JSONArray children = new JSONArray();
 
         if (list != null)
         {
-            final int size = list.length();
+            int size = list.length();
 
             for (int i = 0; i < size; i++)
             {
@@ -353,9 +339,9 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * A draw will be invoked after the layer is added.
      */
     @Override
-    public final Scene add(Layer layer)
+    public void add(Layer layer)
     {
-        if ((null != layer) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != layer) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
             CanvasElement element = layer.getCanvasElement();
 
@@ -369,18 +355,17 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
             super.add(layer);
 
-            layer.batch();
+            layer.draw();
         }
-        return this;
     }
 
     /**
      * Removes a {@link Layer}
      */
     @Override
-    public final Scene remove(Layer layer)
+    public void remove(Layer layer)
     {
-        if ((null != layer) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != layer) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
             CanvasElement element = layer.getCanvasElement();
 
@@ -388,16 +373,15 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
             super.remove(layer);
         }
-        return this;
     }
 
     /**
      * Removes all {@link Layer}
      */
     @Override
-    public final Scene removeAll()
+    public void removeAll()
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             while (getElement().getChildCount() > 0)
             {
@@ -407,7 +391,6 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
             }
             super.removeAll();
         }
-        return this;
     }
 
     /**
@@ -416,17 +399,17 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @param layer
      */
     @Override
-    public final Scene moveDown(Layer layer)
+    public void moveDown(Layer layer)
     {
-        if ((null != layer) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != layer) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
             CanvasElement element = layer.getCanvasElement();
 
-            final int size = getElement().getChildCount();
+            int size = getElement().getChildCount();
 
             if (size < 2)
             {
-                return this;
+                return;
             }
             for (int i = 0; i < size; i++)
             {
@@ -452,7 +435,6 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
                 layers.moveDown(layer);
             }
         }
-        return this;
     }
 
     /**
@@ -461,15 +443,15 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @param layer
      */
     @Override
-    public final Scene moveUp(Layer layer)
+    public void moveUp(Layer layer)
     {
-        if ((null != layer) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != layer) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
-            final int size = getElement().getChildCount();
+            int size = getElement().getChildCount();
 
             if (size < 2)
             {
-                return this;
+                return;
             }
             CanvasElement element = layer.getCanvasElement();
 
@@ -499,7 +481,6 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
                 layers.moveUp(layer);
             }
         }
-        return this;
     }
 
     /**
@@ -508,15 +489,15 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @param layer
      */
     @Override
-    public final Scene moveToTop(Layer layer)
+    public void moveToTop(Layer layer)
     {
-        if ((null != layer) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != layer) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
-            final int size = getElement().getChildCount();
+            int size = getElement().getChildCount();
 
             if (size < 2)
             {
-                return this;
+                return;
             }
             CanvasElement element = layer.getCanvasElement();
 
@@ -531,7 +512,6 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
                 layers.moveToTop(layer);
             }
         }
-        return this;
     }
 
     /**
@@ -540,15 +520,15 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @param layer
      */
     @Override
-    public final Scene moveToBottom(Layer layer)
+    public void moveToBottom(Layer layer)
     {
-        if ((null != layer) && (LienzoGlobals.get().isCanvasSupported()))
+        if ((null != layer) && (LienzoGlobals.getInstance().isCanvasSupported()))
         {
-            final int size = getElement().getChildCount();
+            int size = getElement().getChildCount();
 
             if (size < 2)
             {
-                return this;
+                return;
             }
             CanvasElement element = layer.getCanvasElement();
 
@@ -563,7 +543,6 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
                 layers.moveToBottom(layer);
             }
         }
-        return this;
     }
 
     /**
@@ -572,7 +551,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return this Scene
      */
     @Override
-    public final Scene moveUp()
+    public Scene moveUp()
     {
         return this;
     }
@@ -583,7 +562,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return this Scene
      */
     @Override
-    public final Scene moveDown()
+    public Scene moveDown()
     {
         return this;
     }
@@ -594,7 +573,7 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return this Scene
      */
     @Override
-    public final Scene moveToTop()
+    public Scene moveToTop()
     {
         return this;
     }
@@ -605,18 +584,18 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
      * @return this Scene
      */
     @Override
-    public final Scene moveToBottom()
+    public Scene moveToBottom()
     {
         return this;
     }
 
     public final String toDataURL()
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             ScratchCanvas scratch = new ScratchCanvas(m_wide, m_high);
 
-            final FastArrayList<Layer> layers = getChildNodes();
+            FastArrayList<Layer> layers = getChildNodes();
 
             if (null != layers)
             {
@@ -644,11 +623,11 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
     final String toDataURL(Layer background)
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             ScratchCanvas scratch = new ScratchCanvas(m_wide, m_high);
 
-            final FastArrayList<Layer> layers = getChildNodes();
+            FastArrayList<Layer> layers = getChildNodes();
 
             if (null != layers)
             {
@@ -678,11 +657,11 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
     public final String toDataURL(DataURLType mimetype)
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             ScratchCanvas scratch = new ScratchCanvas(m_wide, m_high);
 
-            final FastArrayList<Layer> layers = getChildNodes();
+            FastArrayList<Layer> layers = getChildNodes();
 
             if (null != layers)
             {
@@ -710,11 +689,11 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
 
     final String toDataURL(DataURLType mimetype, Layer background)
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             ScratchCanvas scratch = new ScratchCanvas(m_wide, m_high);
 
-            final FastArrayList<Layer> layers = getChildNodes();
+            FastArrayList<Layer> layers = getChildNodes();
 
             if (null != layers)
             {
@@ -743,15 +722,15 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
     }
 
     @Override
-    public final ArrayList<Node<?>> search(INodeFilter filter)
+    public ArrayList<Node<?>> search(INodeFilter filter)
     {
-        final ArrayList<Node<?>> find = new ArrayList<Node<?>>();
+        ArrayList<Node<?>> find = new ArrayList<Node<?>>();
 
         if (filter.matches(this))
         {
             find.add(this);
         }
-        final int size = length();
+        int size = length();
 
         for (int i = 0; i < size; i++)
         {
@@ -779,7 +758,13 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
     }
 
     @Override
-    public final IFactory<Scene> getFactory()
+    public boolean isValidForContainer(IJSONSerializable<?> node)
+    {
+        return (node instanceof Layer);
+    }
+
+    @Override
+    public IFactory<?> getFactory()
     {
         return new SceneFactory();
     }
@@ -792,36 +777,19 @@ public class Scene extends ContainerNode<Layer, Scene> implements IJSONSerializa
         }
 
         @Override
-        public final Scene create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Scene create(JSONObject node, ValidationContext ctx) throws ValidationException
         {
-            Scene container = new Scene(node, ctx);
+            Scene g = new Scene(node);
 
-            JSONDeserializer.getInstance().deserializeChildren(container, node, this, ctx);
+            JSONDeserializer.getInstance().deserializeChildren(g, node, this, ctx);
 
-            return container;
+            return g;
         }
 
         @Override
-        public final boolean addNodeForContainer(IContainer<?, ?> container, Node<?> node, ValidationContext ctx)
+        public boolean isValidForContainer(IContainer<?> g, IJSONSerializable<?> node)
         {
-            if (node.getNodeType() == NodeType.LAYER)
-            {
-                container.asScene().add(node.asLayer());
-
-                return true;
-            }
-            else
-            {
-                try
-                {
-                    ctx.addBadTypeError(node.getClass().getName() + " is not a Layer");
-                }
-                catch (ValidationException e)
-                {
-                    return false;
-                }
-            }
-            return false;
+            return g.isValidForContainer(node);
         }
     }
 }

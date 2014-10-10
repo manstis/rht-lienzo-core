@@ -25,7 +25,7 @@ import com.emitrom.lienzo.client.core.types.INodeFilter;
 /**
  * Interface to be implemented by all primitive collections. 
  */
-public interface IContainer<T extends IContainer<T, M>, M> extends Iterable<M>
+public interface IContainer<M> extends Iterable<M>
 {
     /**
      * Gets all nodes in this container.
@@ -39,46 +39,46 @@ public interface IContainer<T extends IContainer<T, M>, M> extends Iterable<M>
      * 
      * @param node
      */
-    public T add(M node);
+    public void add(M node);
 
     /**
      * Removes the given node from the container.
      * 
      * @param node
      */
-    public T remove(M node);
+    public void remove(M node);
 
     /**
      * Removes all nodes from this cotainer.
      */
-    public T removeAll();
+    public void removeAll();
 
     /**
      * Moves the node one layer up.
      * 
      * @param node
      */
-    public T moveUp(M node);
+    public void moveUp(M node);
 
     /**
      * Modes the node one layer down
      * 
      * @param node
      */
-    public T moveDown(M node);
+    public void moveDown(M node);
 
     /**
      * Moves the node to the top of the layer stack
      * 
      * @param node
      */
-    public T moveToTop(M node);
+    public void moveToTop(M node);
 
     /**
      * Moves the node to the bottom of the layer stack
      * @param node
      */
-    public T moveToBottom(M node);
+    public void moveToBottom(M node);
 
     /**
      * Searches and returns all {@link Node} that match the {@link com.emitrom.lienzo.client.core.types.INodeFilter}
@@ -88,42 +88,5 @@ public interface IContainer<T extends IContainer<T, M>, M> extends Iterable<M>
      */
     public ArrayList<Node<?>> search(INodeFilter filter);
 
-    /**
-     * Returns the number of items in this container
-     * 
-     * @return int
-     */
-    public int length();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Viewport asViewport();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Scene asScene();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Layer asLayer();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Group asGroup();
+    public boolean isValidForContainer(IJSONSerializable<?> node);
 }

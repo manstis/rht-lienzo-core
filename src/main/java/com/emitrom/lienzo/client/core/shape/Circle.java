@@ -43,9 +43,9 @@ public class Circle extends Shape<Circle>
         setRadius(radius);
     }
 
-    protected Circle(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Circle(JSONObject node)
     {
-        super(ShapeType.CIRCLE, node, ctx);
+        super(ShapeType.CIRCLE, node);
     }
 
     /**
@@ -56,19 +56,13 @@ public class Circle extends Shape<Circle>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double r = getRadius();
+        context.beginPath();
 
-        if (r > 0)
-        {
-            context.beginPath();
+        context.arc(0, 0, getRadius(), 0, Math.PI * 2, true);
 
-            context.arc(0, 0, r, 0, Math.PI * 2, true);
+        context.closePath();
 
-            context.closePath();
-
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -101,7 +95,7 @@ public class Circle extends Shape<Circle>
     }
 
     @Override
-    public IFactory<Circle> getFactory()
+    public IFactory<?> getFactory()
     {
         return new CircleFactory();
     }
@@ -118,7 +112,7 @@ public class Circle extends Shape<Circle>
         @Override
         public Circle create(JSONObject node, ValidationContext ctx) throws ValidationException
         {
-            return new Circle(node, ctx);
+            return new Circle(node);
         }
     }
 }

@@ -26,6 +26,7 @@ import com.emitrom.lienzo.client.core.shape.Circle;
 import com.emitrom.lienzo.client.core.shape.Ellipse;
 import com.emitrom.lienzo.client.core.shape.GridLayer;
 import com.emitrom.lienzo.client.core.shape.Group;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.IsoscelesTrapezoid;
 import com.emitrom.lienzo.client.core.shape.Layer;
 import com.emitrom.lienzo.client.core.shape.Line;
@@ -55,12 +56,13 @@ import com.emitrom.lienzo.client.core.util.Console;
  */
 public final class FactoryRegistry
 {
-    private static FactoryRegistry           s_instance;
+    private static final FactoryRegistry     s_instance   = createRegistry();
 
-    private final FastStringMap<IFactory<?>> m_factories = new FastStringMap<IFactory<?>>();
+    private final FastStringMap<IFactory<?>> m_factoryMap = new FastStringMap<IFactory<?>>();
 
     private FactoryRegistry()
     {
+        // There can be only one. Therefore it's a Singleton and can't be sub-classed, all methods and variables can be final
     }
 
     /**
@@ -76,9 +78,9 @@ public final class FactoryRegistry
     {
         String type = factory.getTypeName();
 
-        if (null == m_factories.get(type))
+        if (null == m_factoryMap.get(type))
         {
-            m_factories.put(type, factory);
+            m_factoryMap.put(type, factory);
         }
         else
         {
@@ -95,7 +97,7 @@ public final class FactoryRegistry
      */
     public final IFactory<?> getFactory(String typeName)
     {
-        return m_factories.get(typeName);
+        return m_factoryMap.get(typeName);
     }
 
     /**
@@ -104,16 +106,10 @@ public final class FactoryRegistry
      */
     public static final FactoryRegistry getInstance()
     {
-        if (null == s_instance)
-        {
-            // changed to lazy init - DSJ
-            
-            s_instance = makeFactoryRegistry();
-        }
         return s_instance;
     }
 
-    private static final FactoryRegistry makeFactoryRegistry()
+    private static final FactoryRegistry createRegistry()
     {
         // Make sure we register the built-in Lienzo types first,
         // so that toolkit users can't override them.

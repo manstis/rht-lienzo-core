@@ -17,25 +17,20 @@
 
 package com.emitrom.lienzo.client.core.shape;
 
-import java.util.Collection;
-
 import com.emitrom.lienzo.client.core.Attribute;
 import com.emitrom.lienzo.client.core.Context2D;
-import com.emitrom.lienzo.client.core.image.ImageClipBounds;
-import com.emitrom.lienzo.client.core.image.ImageDataFilter;
-import com.emitrom.lienzo.client.core.image.ImageDataFilterable;
-import com.emitrom.lienzo.client.core.image.ImageShapeFilteredHandler;
-import com.emitrom.lienzo.client.core.image.ImageShapeLoadedHandler;
-import com.emitrom.lienzo.client.core.image.PictureFilteredHandler;
+import com.emitrom.lienzo.client.core.animation.LayerRedrawManager;
+import com.emitrom.lienzo.client.core.image.ImageProxy;
 import com.emitrom.lienzo.client.core.image.PictureLoadedHandler;
+import com.emitrom.lienzo.client.core.image.PictureLoader;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
-import com.emitrom.lienzo.client.core.shape.json.IJSONSerializable;
+import com.emitrom.lienzo.client.core.shape.json.PostProcessNodeFactory;
+import com.emitrom.lienzo.client.core.shape.json.ResourceResolver;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
+import com.emitrom.lienzo.client.core.types.ImageData;
 import com.emitrom.lienzo.shared.core.types.DataURLType;
-import com.emitrom.lienzo.shared.core.types.ImageSelectionMode;
-import com.emitrom.lienzo.shared.core.types.ImageSerializationMode;
+import com.emitrom.lienzo.shared.core.types.PictureSerializationMode;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -55,111 +50,17 @@ import com.google.gwt.resources.client.ImageResource;
  * The upside is that it will not need to generate a separate Image for the Selection Layer,
  * which saves memory and time, both for generating the selection layer Image and when drawing the Picture.
  */
-public class Picture extends AbstractImageShape<Picture> implements ImageDataFilterable<Picture>
+public class Picture extends Shape<Picture>
 {
-    protected Picture(JSONObject node, ValidationContext ctx) throws ValidationException
+    private final ImageProxy m_proxy;
+
+    protected Picture(JSONObject node, ResourceResolver resolver)
     {
-        super(ShapeType.PICTURE, node, ctx);
-    }
+        super(ShapeType.PICTURE, node);
 
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url)
-    {
-        super(ShapeType.PICTURE, url, true, ImageSelectionMode.SELECT_NON_TRANSPARENT);
+        resolver.resolve(this);
 
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, url, true, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, url, true, mode);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, url, true, mode);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        m_proxy = new ImageProxy(this, true);
     }
 
     /**
@@ -181,9 +82,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      */
     public Picture(String url, boolean listening)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().load();
+        this(url, true, listening, null);
     }
 
     /**
@@ -196,70 +95,17 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * <li>clippedImageHeight - 0 (means: use image height)
      * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
      * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
      * </ul>
      * 
      * @param url
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
+     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
+     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(String url, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(String url, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        this(url, true, listening, pictureCategory);
     }
 
     /**
@@ -281,17 +127,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      */
     public Picture(String url, int sx, int sy, int sw, int sh, boolean listening)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        getImageProxy().load();
+        this(url, sx, sy, sw, sh, listening, null);
     }
 
     /**
@@ -300,7 +136,6 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * <ul>
      * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
      * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
      * </ul>
      * 
      * @param url
@@ -310,88 +145,19 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param sh clippedImageHeight
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
+     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
+     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(String url, int sx, int sy, int sw, int sh, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(String url, int sx, int sy, int sw, int sh, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
+        this(url, false, listening, pictureCategory);
 
         setClippedImageStartX(sx);
-
         setClippedImageStartY(sy);
-
         setClippedImageWidth(sw);
-
         setClippedImageHeight(sh);
 
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from a URL.
-    * The following attributes are defaulted:
-    * <ul>
-    * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-    * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-    * <li>category
-    * </ul>
-    * 
-    * @param url
-    * @param sx clippedImageStartX
-    * @param sy clippedImageStartY
-    * @param sw clippedImageWidth
-    * @param sh clippedImageHeight
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    */
-    public Picture(String url, int sx, int sy, int sw, int sh, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param sx clippedImageStartX
-     * @param sy clippedImageStartY
-     * @param sw clippedImageWidth
-     * @param sh clippedImageHeight
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, int sx, int sy, int sw, int sh, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        m_proxy.load();
     }
 
     /**
@@ -409,25 +175,11 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      */
     public Picture(String url, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
+        this(url, sx, sy, sw, sh, dw, dh, listening, null);
     }
 
     /**
-     * Creates a Picture from a URL using the default category.
+     * Creates a Picture from a URL.
      * 
      * @param url
      * @param sx clippedImageStartX
@@ -438,92 +190,21 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
+     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
+     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(String url, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(String url, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
+        this(url, false, listening, pictureCategory);
 
         setClippedImageStartX(sx);
-
         setClippedImageStartY(sy);
-
         setClippedImageWidth(sw);
-
         setClippedImageHeight(sh);
-
         setClippedImageDestinationWidth(dw);
-
         setClippedImageDestinationHeight(dh);
 
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL using the default category.
-     * 
-     * @param url
-     * @param sx clippedImageStartX
-     * @param sy clippedImageStartY
-     * @param sw clippedImageWidth (0 means: use image width)
-     * @param sh clippedImageHeight (0 means: use image height)
-     * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-     * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from a URL using the default category.
-    * 
-    * @param url
-    * @param sx clippedImageStartX
-    * @param sy clippedImageStartY
-    * @param sw clippedImageWidth (0 means: use image width)
-    * @param sh clippedImageHeight (0 means: use image height)
-    * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-    * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    */
-    public Picture(String url, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        m_proxy.load();
     }
 
     /**
@@ -545,13 +226,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      */
     public Picture(String url, int dw, int dh, boolean listening)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
+        this(url, dw, dh, listening, null);
     }
 
     /**
@@ -562,7 +237,6 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * <li>clippedImageStartY - 0
      * <li>clippedImageWidth - 0 (means: use image width)
      * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>category
      * </ul>
      * 
      * @param url
@@ -570,76 +244,17 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
+     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
+     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(String url, int dw, int dh, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(String url, int dw, int dh, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, url, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
+        this(url, false, listening, pictureCategory);
 
         setClippedImageDestinationWidth(dw);
-
         setClippedImageDestinationHeight(dh);
 
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from a URL.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>category
-     * </ul>
-     * 
-     * @param url
-     * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-     * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(String url, int dw, int dh, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from a URL.
-    * The following attributes are defaulted:
-    * <ul>
-    * <li>clippedImageStartX - 0
-    * <li>clippedImageStartY - 0
-    * <li>clippedImageWidth - 0 (means: use image width)
-    * <li>clippedImageHeight - 0 (means: use image height)
-    * <li>category
-    * </ul>
-    * 
-    * @param url
-    * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-    * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    */
-    public Picture(String url, int dw, int dh, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, url, listening, mode);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        m_proxy.load();
     }
 
     /**
@@ -659,111 +274,9 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
      */
-    public Picture(ImageResource resource)
-    {
-        super(ShapeType.PICTURE, resource, true, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from an ImageResource.
-    * The following attributes are defaulted:
-    * <ul>
-    * <li>clippedImageStartX - 0
-    * <li>clippedImageStartY - 0
-    * <li>clippedImageWidth - 0 (means: use image width)
-    * <li>clippedImageHeight - 0 (means: use image height)
-    * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-    * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-    * <li>category
-    * </ul>
-    * 
-    * @param resource ImageResource
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    */
-    public Picture(ImageResource resource, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, resource, true, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param resource ImageResource
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(ImageResource resource, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, resource, true, mode);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param resource ImageResource
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(ImageResource resource, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, resource, true, mode);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from an ImageResource.
-    * The following attributes are defaulted:
-    * <ul>
-    * <li>clippedImageStartX - 0
-    * <li>clippedImageStartY - 0
-    * <li>clippedImageWidth - 0 (means: use image width)
-    * <li>clippedImageHeight - 0 (means: use image height)
-    * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-    * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-    * <li>category
-    * </ul>
-    * 
-    * @param resource ImageResource
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    */
     public Picture(ImageResource resource, boolean listening)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().load();
+        this(resource, true, listening, null);
     }
 
     /**
@@ -776,70 +289,17 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * <li>clippedImageHeight - 0 (means: use image height)
      * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
      * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
      * </ul>
      * 
      * @param resource ImageResource
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
+     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
+     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(ImageResource resource, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(ImageResource resource, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * <li>category
-     * </ul>
-     * 
-     * @param resource ImageResource
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     */
-    public Picture(ImageResource resource, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from an ImageResource.
-    * The following attributes are defaulted:
-    * <ul>
-    * <li>clippedImageStartX - 0
-    * <li>clippedImageStartY - 0
-    * <li>clippedImageWidth - 0 (means: use image width)
-    * <li>clippedImageHeight - 0 (means: use image height)
-    * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-    * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-    * <li>category
-    * </ul>
-    * 
-    * @param resource ImageResource
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    */
-    public Picture(ImageResource resource, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        this(resource, true, listening, pictureCategory);
     }
 
     /**
@@ -848,6 +308,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * <ul>
      * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
      * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
+     * <li>category
      * </ul>
      * 
      * @param resource ImageResource
@@ -857,22 +318,10 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param sh clippedImageHeight
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
     public Picture(ImageResource resource, int sx, int sy, int sw, int sh, boolean listening)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        getImageProxy().load();
+        this(resource, sx, sy, sw, sh, listening, null);
     }
 
     /**
@@ -893,93 +342,20 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
      *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
+        this(resource, false, listening, pictureCategory);
 
         setClippedImageStartX(sx);
-
         setClippedImageStartY(sy);
-
         setClippedImageWidth(sw);
-
         setClippedImageHeight(sh);
 
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        m_proxy.load();
     }
 
     /**
-     * Creates a Picture from an ImageResource.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * </ul>
-     * 
-     * @param resource ImageResource
-     * @param sx clippedImageStartX
-     * @param sy clippedImageStartY
-     * @param sw clippedImageWidth
-     * @param sh clippedImageHeight
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
-     */
-    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageDestinationWidth - 0 (means: use clippedImageWidth)
-     * <li>clippedImageDestinationHeight - 0 (means: use clippedImageHeight)
-     * </ul>
-     * 
-     * @param resource ImageResource
-     * @param sx clippedImageStartX
-     * @param sy clippedImageStartY
-     * @param sw clippedImageWidth
-     * @param sh clippedImageHeight
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
-     */
-    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
+     * Creates a Picture from an ImageResource using the default category.
      * 
      * @param resource ImageResource
      * @param sx clippedImageStartX
@@ -990,26 +366,10 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
     public Picture(ImageResource resource, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
+        this(resource, sx, sy, sw, sh, dw, dh, listening, null);
     }
 
     /**
@@ -1027,95 +387,18 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
      *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
+    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
+        this(resource, false, listening, pictureCategory);
 
         setClippedImageStartX(sx);
-
         setClippedImageStartY(sy);
-
         setClippedImageWidth(sw);
-
         setClippedImageHeight(sh);
-
         setClippedImageDestinationWidth(dw);
-
         setClippedImageDestinationHeight(dh);
 
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
-     * 
-     * @param resource ImageResource
-     * @param sx clippedImageStartX
-     * @param sy clippedImageStartY
-     * @param sw clippedImageWidth (0 means: use image width)
-     * @param sh clippedImageHeight (0 means: use image height)
-     * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-     * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
-     */
-    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, ImageSelectionMode mode)
-    {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
-    }
-
-    /**
-     * Creates a Picture from an ImageResource.
-     * 
-     * @param resource ImageResource
-     * @param sx clippedImageStartX
-     * @param sy clippedImageStartY
-     * @param sw clippedImageWidth (0 means: use image width)
-     * @param sh clippedImageHeight (0 means: use image height)
-     * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-     * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
-     */
-    public Picture(ImageResource resource, int sx, int sy, int sw, int sh, int dw, int dh, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        setClippedImageStartX(sx);
-
-        setClippedImageStartY(sy);
-
-        setClippedImageWidth(sw);
-
-        setClippedImageHeight(sh);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        m_proxy.load();
     }
 
     /**
@@ -1126,6 +409,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * <li>clippedImageStartY - 0
      * <li>clippedImageWidth - 0 (means: use image width)
      * <li>clippedImageHeight - 0 (means: use image height)
+     * <li>category
      * </ul>
      * 
      * @param resource ImageResource
@@ -1133,49 +417,10 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
      * @param listening When set to false, the Picture can't be dragged or picked,
      *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
      */
     public Picture(ImageResource resource, int dw, int dh, boolean listening)
     {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().load();
-    }
-
-    /**
-    * Creates a Picture from an ImageResource.
-    * The following attributes are defaulted:
-    * <ul>
-    * <li>clippedImageStartX - 0
-    * <li>clippedImageStartY - 0
-    * <li>clippedImageWidth - 0 (means: use image width)
-    * <li>clippedImageHeight - 0 (means: use image height)
-    * </ul>
-    * 
-    * @param resource ImageResource
-    * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-    * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-    * @param listening When set to false, the Picture can't be dragged or picked,
-    *      but it will be drawn faster and use less memory.
-    * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-    *      the Pictures in a category are loaded.  Null means: use the default category.
-    */
-    public Picture(ImageResource resource, int dw, int dh, boolean listening, ImageDataFilter filter, ImageDataFilter... filters)
-    {
-        super(ShapeType.PICTURE, resource, listening, ImageSelectionMode.SELECT_NON_TRANSPARENT);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        this(resource, dw, dh, listening, null);
     }
 
     /**
@@ -1196,122 +441,73 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
      *      the Pictures in a category are loaded.  Null means: use the default category.
      */
-    public Picture(ImageResource resource, int dw, int dh, boolean listening, ImageSelectionMode mode)
+    public Picture(ImageResource resource, int dw, int dh, boolean listening, String pictureCategory)
     {
-        super(ShapeType.PICTURE, resource, listening, mode);
+        this(resource, false, listening, pictureCategory);
 
         setClippedImageDestinationWidth(dw);
-
         setClippedImageDestinationHeight(dh);
 
-        getImageProxy().load();
+        m_proxy.load();
+    }
+
+    protected Picture(String url, boolean load, boolean listening, String pictureCategory)
+    {
+        super(ShapeType.PICTURE);
+
+        setURL(url);
+
+        setListening(listening);
+
+        if (pictureCategory != null) setPictureCategory(pictureCategory);
+
+        m_proxy = new ImageProxy(this, load);
+    }
+
+    protected Picture(ImageResource resource, boolean load, boolean listening, String pictureCategory)
+    {
+        this(resource.getSafeUri().asString(), load, listening, pictureCategory);
+        // resource.getSafeUri().asString() is the same as resource.getURL() - which is deprecated
     }
 
     /**
-     * Creates a Picture from an ImageResource.
-     * The following attributes are defaulted:
-     * <ul>
-     * <li>clippedImageStartX - 0
-     * <li>clippedImageStartY - 0
-     * <li>clippedImageWidth - 0 (means: use image width)
-     * <li>clippedImageHeight - 0 (means: use image height)
-     * </ul>
+     * Returns whether the image of the Picture is loaded.
      * 
-     * @param resource ImageResource
-     * @param dw clippedImageDestinationWidth (0 means: use clippedImageWidth)
-     * @param dh clippedImageDestinationHeight (0 means: use clippedImageHeight)
-     * @param listening When set to false, the Picture can't be dragged or picked,
-     *      but it will be drawn faster and use less memory.
-     * @param pictureCategory Used by {@link PictureLoader} when (all the images of) all
-     *      the Pictures in a category are loaded.  Null means: use the default category.
+     * @return boolean
      */
-    public Picture(ImageResource resource, int dw, int dh, boolean listening, ImageSelectionMode mode, ImageDataFilter filter, ImageDataFilter... filters)
+    public boolean isLoaded()
     {
-        super(ShapeType.PICTURE, resource, listening, mode);
-
-        setClippedImageDestinationWidth(dw);
-
-        setClippedImageDestinationHeight(dh);
-
-        getImageProxy().setFilters(filter, filters);
-
-        getImageProxy().load();
+        return m_proxy.isLoaded();
     }
 
-    @Override
-    public Picture setFilters(ImageDataFilter filter, ImageDataFilter... filters)
+    /**
+     * Sets the handler that will be invoked when the image of the Picture has loaded.
+     * The handler may be invoked immediately if the image has already been loaded.
+     * 
+     * @param handler
+     * @return Picture
+     */
+    public Picture onLoad(PictureLoadedHandler handler)
     {
-        getImageProxy().setFilters(filter, filters);
+        m_proxy.setPictureLoadedHandler(handler);
 
         return this;
     }
 
-    @Override
-    public Picture addFilters(ImageDataFilter filter, ImageDataFilter... filters)
+    public ImageData getImageData()
     {
-        getImageProxy().addFilters(filter, filters);
-
-        return this;
+        return m_proxy.getImageData();
     }
 
-    @Override
-    public Picture removeFilters(ImageDataFilter filter, ImageDataFilter... filters)
+    /**
+     * Returns the data: URL
+     * 
+     * @param mimeType If null, defaults to DataURLType.PNG
+     * @return String
+     */
+    public String toDataURL(DataURLType mimeType)
     {
-        getImageProxy().removeFilters(filter, filters);
-
-        return this;
-    }
-
-    @Override
-    public Picture clearFilters()
-    {
-        getImageProxy().clearFilters();
-
-        return this;
-    }
-
-    @Override
-    public Collection<ImageDataFilter> getFilters()
-    {
-        return getImageProxy().getFilters();
-    }
-
-    @Override
-    public Picture setFiltersActive(boolean active)
-    {
-        getImageProxy().setFiltersActive(active);
-
-        return this;
-    }
-
-    @Override
-    public boolean areFiltersActive()
-    {
-        return getImageProxy().areFiltersActive();
-    }
-
-    @Override
-    public Picture setFilters(Iterable<ImageDataFilter> filters)
-    {
-        getImageProxy().setFilters(filters);
-
-        return this;
-    }
-
-    @Override
-    public Picture addFilters(Iterable<ImageDataFilter> filters)
-    {
-        getImageProxy().addFilters(filters);
-
-        return this;
-    }
-
-    @Override
-    public Picture removeFilters(Iterable<ImageDataFilter> filters)
-    {
-        getImageProxy().removeFilters(filters);
-
-        return this;
+        return m_proxy.toDataURL(mimeType);
     }
 
     /**
@@ -1324,11 +520,17 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
     {
         JSONObject attr = new JSONObject(getAttributes());
 
-        ImageSerializationMode mode = getImageSerializationMode();
+        PictureSerializationMode mode = getSerializationMode();
 
-        if (mode == ImageSerializationMode.DATA_URL)
+        if (mode == PictureSerializationMode.DATA_URL)
         {
-            attr.put("url", new JSONString(toDataURL(DataURLType.PNG)));
+            // TODO support different image formats
+            attr.put("url", new JSONString(toDataURL(null)));
+        }
+        else if (mode == PictureSerializationMode.RESOURCE_ID)
+        {
+            // TODO where do we make sure that it has a resourceID
+            // TODO should we remove the URL here?
         }
         JSONObject object = new JSONObject();
 
@@ -1337,6 +539,11 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
         object.put("attributes", attr);
 
         return object;
+    }
+
+    public static void onCategoryLoaded(String category, Runnable callback)
+    {
+        PictureLoader.getInstance().registerCallback(category, callback);
     }
 
     /**
@@ -1353,7 +560,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
         {
             context.setGlobalAlpha(1);
 
-            getImageProxy().drawImage(context);
+            m_proxy.drawSelectionImage(context);
 
             context.restore();
         }
@@ -1363,20 +570,56 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
 
             doApplyShadow(context, attr);
 
-            getImageProxy().drawImage(context);
+            m_proxy.drawImage(context);
 
             context.restore();
         }
         return false;
     }
 
+    public String getPictureCategory()
+    {
+        return getAttributes().getPictureCategory();
+    }
+
+    public Picture setPictureCategory(String pictureCategory)
+    {
+        getAttributes().setPictureCategory(pictureCategory);
+
+        return this;
+    }
+
+    public PictureSerializationMode getSerializationMode()
+    {
+        return getAttributes().getSerializationMode();
+    }
+
+    public Picture setSerializationMode(PictureSerializationMode serializationMode)
+    {
+        getAttributes().setSerializationMode(serializationMode);
+
+        return this;
+    }
+
+    public String getResourceID()
+    {
+        return getAttributes().getResourceID();
+    }
+
+    public Picture setResourceID(String resourceID)
+    {
+        getAttributes().setResourceID(resourceID);
+
+        return this;
+    }
+
     /**
      * Returns the x coordinate of the picture's clip region. 
      * The default value is 0.
      * 
-     * @return int
+     * @return double
      */
-    public int getClippedImageStartX()
+    public double getClippedImageStartX()
     {
         return getAttributes().getClippedImageStartX();
     }
@@ -1388,7 +631,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param sx
      * @return Picture this picture
      */
-    public Picture setClippedImageStartX(int sx)
+    public Picture setClippedImageStartX(double sx)
     {
         getAttributes().setClippedImageStartX(sx);
 
@@ -1399,9 +642,9 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * Returns the y coordinate of the picture's clip region. 
      * The default value is 0.
      * 
-     * @return int
+     * @return double
      */
-    public int getClippedImageStartY()
+    public double getClippedImageStartY()
     {
         return getAttributes().getClippedImageStartY();
     }
@@ -1413,7 +656,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param sy
      * @return Picture this picture
      */
-    public Picture setClippedImageStartY(int clippedImageStartY)
+    public Picture setClippedImageStartY(double clippedImageStartY)
     {
         getAttributes().setClippedImageStartY(clippedImageStartY);
 
@@ -1425,9 +668,9 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * If the value is not set, it defaults to 0, which means it will
      * use the width of the loaded image.
      * 
-     * @return int
+     * @return double
      */
-    public int getClippedImageWidth()
+    public double getClippedImageWidth()
     {
         return getAttributes().getClippedImageWidth();
     }
@@ -1440,7 +683,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param clippedImageWidth 
      * @return Picture this picture
      */
-    public Picture setClippedImageWidth(int clippedImageWidth)
+    public Picture setClippedImageWidth(double clippedImageWidth)
     {
         getAttributes().setClippedImageWidth(clippedImageWidth);
 
@@ -1452,9 +695,9 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * If the value is not set, it defaults to 0, which means it will
      * use the height of the loaded image.
      * 
-     * @return int
+     * @return double
      */
-    public int getClippedImageHeight()
+    public double getClippedImageHeight()
     {
         return getAttributes().getClippedImageHeight();
     }
@@ -1467,7 +710,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param clippedImageHeight
      * @return Picture this picture
      */
-    public Picture setClippedImageHeight(int clippedImageHeight)
+    public Picture setClippedImageHeight(double clippedImageHeight)
     {
         getAttributes().setClippedImageHeight(clippedImageHeight);
 
@@ -1478,9 +721,9 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * Returns the width of the destination region. 
      * The default value is 0, which means it will use the clippedImageWidth.
      * 
-     * @return int
+     * @return double
      */
-    public int getClippedImageDestinationWidth()
+    public double getClippedImageDestinationWidth()
     {
         return getAttributes().getClippedImageDestinationWidth();
     }
@@ -1492,7 +735,7 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param clippedImageDestinationWidth
      * @return Picture
      */
-    public Picture setClippedImageDestinationWidth(int clippedImageDestinationWidth)
+    public Picture setClippedImageDestinationWidth(double clippedImageDestinationWidth)
     {
         getAttributes().setClippedImageDestinationWidth(clippedImageDestinationWidth);
 
@@ -1510,9 +753,9 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * Note that further scaling can be achieved via the <code>scale</code>
      * or <code>transform</code> attributes, which apply to all Shapes.
      * 
-     * @return int
+     * @return double
      */
-    public int getClippedImageDestinationHeight()
+    public double getClippedImageDestinationHeight()
     {
         return getAttributes().getClippedImageDestinationHeight();
     }
@@ -1531,71 +774,51 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
      * @param clippedImageDestinationHeight
      * @return Picture
      */
-    public Picture setClippedImageDestinationHeight(int clippedImageDestinationHeight)
+    public Picture setClippedImageDestinationHeight(double clippedImageDestinationHeight)
     {
         getAttributes().setClippedImageDestinationHeight(clippedImageDestinationHeight);
 
         return this;
     }
 
-    public Picture onLoaded(final PictureLoadedHandler handler)
+    /**
+     * Returns the URL of the image. For ImageResources, this return the
+     * value of ImageResource.getSafeUri().asString().
+     * 
+     * @return String
+     */
+    public String getURL()
     {
-        getImageProxy().setImageShapeLoadedHandler(new ImageShapeLoadedHandler<Picture>()
-        {
-            @Override
-            public void onImageShapeLoaded(Picture picture)
-            {
-                handler.onPictureLoaded(picture);
-            }
-        });
-        return this;
+        return getAttributes().getURL();
     }
 
-    public Picture reFilter(final PictureFilteredHandler handler)
+    /**
+     * Sets the URL of the image. For ImageResources, this should be the
+     * value of ImageResource.getSafeUri().asString().
+     * 
+     * @param url
+     * @return Picture
+     */
+    public Picture setURL(String url)
     {
-        getImageProxy().reFilter(new ImageShapeFilteredHandler<Picture>()
-        {
-            @Override
-            public void onImageShapeFiltered(Picture picture)
-            {
-                handler.onPictureFiltered(picture);
-            }
-        });
-        return this;
-    }
+        getAttributes().setURL(url);
 
-    public Picture unFilter(final PictureFilteredHandler handler)
-    {
-        getImageProxy().unFilter(new ImageShapeFilteredHandler<Picture>()
-        {
-            @Override
-            public void onImageShapeFiltered(Picture picture)
-            {
-                handler.onPictureFiltered(picture);
-            }
-        });
         return this;
     }
 
     @Override
-    public IFactory<Picture> getFactory()
+    public IFactory<?> getFactory()
     {
         return new PictureFactory();
     }
 
-    @Override
-    public ImageClipBounds getImageClipBounds()
-    {
-        return new ImageClipBounds(getClippedImageStartX(), getClippedImageStartY(), getClippedImageWidth(), getClippedImageHeight(), getClippedImageDestinationWidth(), getClippedImageDestinationHeight());
-    }
-
-    public static class PictureFactory extends ShapeFactory<Picture>
+    public static class PictureFactory extends ShapeFactory<Picture> implements PostProcessNodeFactory
     {
         public PictureFactory()
         {
             super(ShapeType.PICTURE);
 
-            addAttribute(Attribute.URL, true);
+            addAttribute(Attribute.URL); // NOTE: not required by JSON deserializer!
 
             addAttribute(Attribute.CLIPPED_IMAGE_START_X);
 
@@ -1609,46 +832,48 @@ public class Picture extends AbstractImageShape<Picture> implements ImageDataFil
 
             addAttribute(Attribute.CLIPPED_IMAGE_DESTINATION_HEIGHT);
 
+            addAttribute(Attribute.PICTURE_CATEGORY);
+
             addAttribute(Attribute.SERIALIZATION_MODE);
 
-            addAttribute(Attribute.IMAGE_SELECTION_MODE);
+            addAttribute(Attribute.RESOURCE_ID);
         }
 
         @Override
-        public Picture create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Picture create(JSONObject node, ValidationContext ctx)
         {
-            return new Picture(node, ctx);
+            ResourceResolver resolver = ResourceResolver.getInstance();
+
+            return new Picture(node, resolver);
         }
 
         @Override
-        public boolean isPostProcessed()
-        {
-            return true;
-        }
-
-        @Override
-        public void process(IJSONSerializable<?> node, ValidationContext ctx) throws ValidationException
+        public void process(final IJSONSerializable<?> node)
         {
             if (false == (node instanceof Picture))
             {
                 return;
             }
-            Picture self = (Picture) node;
+            final Picture self = (Picture) node;
 
-            if (false == self.isLoaded())
+            if (self.isLoaded())
             {
-                self.onLoaded(new PictureLoadedHandler()
+                return;
+            }
+            else
+            {
+                self.onLoad(new PictureLoadedHandler()
                 {
                     @Override
                     public void onPictureLoaded(Picture picture)
                     {
-                        if (picture.isLoaded() && picture.isVisible())
-                        {
-                            Layer layer = picture.getLayer();
+                        Layer layer;
 
-                            if ((null != layer) && (null != layer.getViewport()))
+                        if ((layer = picture.getLayer()) != null)
+                        {
+                            if (layer.getParent() != null)
                             {
-                                layer.batch();
+                                LayerRedrawManager.get().schedule(layer);
                             }
                         }
                     }

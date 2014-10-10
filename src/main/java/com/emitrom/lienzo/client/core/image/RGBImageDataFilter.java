@@ -31,25 +31,103 @@ import com.google.gwt.core.client.JavaScriptObject;
  *  </li>
  * </ui>
  */
-public class RGBImageDataFilter extends AbstractBaseRGBImageDataFilter<RGBImageDataFilter>
+public class RGBImageDataFilter implements ImageDataFilter
 {
+    private int     m_r;
+
+    private int     m_g;
+
+    private int     m_b;
+
+    private boolean m_isnative = true;
+
     public RGBImageDataFilter()
     {
+
     }
 
     public RGBImageDataFilter(int r, int g, int b)
     {
-        super(r, g, b);
+        m_r = r;
+
+        m_g = g;
+
+        m_b = b;
     }
 
-    public RGBImageDataFilter(IColor color)
+    public RGBImageDataFilter(IColor col)
     {
-        super(color);
+        m_r = col.getR();
+
+        m_g = col.getG();
+
+        m_b = col.getB();
     }
-    
-    public RGBImageDataFilter(String color)
+
+    /**
+     * @return Red (R) component of the RGB color
+     */
+    public int getR()
     {
-        super(color);
+        return m_r;
+    }
+
+    /**
+     * @param r Red (R) component of the RGB color
+     */
+    public RGBImageDataFilter setR(int r)
+    {
+        m_r = r;
+
+        return this;
+    }
+
+    /**
+     * @return Green (G) component of the RGB color
+     */
+    public int getG()
+    {
+        return m_g;
+    }
+
+    /**
+     * @param g Green (G) component of the RGB color
+     */
+    public RGBImageDataFilter setG(int g)
+    {
+        m_g = g;
+
+        return this;
+    }
+
+    /**
+     * @return Blue (B) component of the RGB color
+     */
+    public int getB()
+    {
+        return m_b;
+    }
+
+    /**
+     * @param Blue (B) component of the RGB color
+     */
+    public RGBImageDataFilter setB(int b)
+    {
+        m_b = b;
+
+        return this;
+    }
+
+    public boolean isNative()
+    {
+        return m_isnative;
+    }
+
+    public RGBImageDataFilter setNative(boolean isnative)
+    {
+        m_isnative = isnative;
+
+        return this;
     }
 
     /**
@@ -62,16 +140,12 @@ public class RGBImageDataFilter extends AbstractBaseRGBImageDataFilter<RGBImageD
         {
             return null;
         }
+        final int length = ((source.getWidth() * source.getHeight()) * PIXEL_SZ);
+
         if (copy)
         {
             source = source.copy();
         }
-        if (false == isActive())
-        {
-            return source;
-        }
-        final int length = getLength(source);
-        
         final CanvasPixelArray data = source.getData();
 
         if (null == data)

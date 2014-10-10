@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -48,9 +47,9 @@ public class Ring extends Shape<Ring>
         setInnerRadius(innerRadius).setOuterRadius(outerRadius);
     }
 
-    protected Ring(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Ring(JSONObject node)
     {
-        super(ShapeType.RING, node, ctx);
+        super(ShapeType.RING, node);
     }
 
     @Override
@@ -67,23 +66,15 @@ public class Ring extends Shape<Ring>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double ord = getOuterRadius();
+        context.beginPath();
 
-        final double ird = getInnerRadius();
+        context.arc(0, 0, getOuterRadius(), 0, Math.PI * 2, false);
 
-        if ((ord > 0) && (ird > 0))
-        {
-            context.beginPath();
+        context.arc(0, 0, getInnerRadius(), 0, Math.PI * 2, true);
 
-            context.arc(0, 0, ord, 0, Math.PI * 2, false);
+        context.closePath();
 
-            context.arc(0, 0, ird, 0, Math.PI * 2, true);
-
-            context.closePath();
-
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -183,7 +174,7 @@ public class Ring extends Shape<Ring>
     }
 
     @Override
-    public IFactory<Ring> getFactory()
+    public IFactory<?> getFactory()
     {
         return new RingFactory();
     }
@@ -200,9 +191,9 @@ public class Ring extends Shape<Ring>
         }
 
         @Override
-        public Ring create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Ring create(JSONObject node, ValidationContext ctx)
         {
-            return new Ring(node, ctx);
+            return new Ring(node);
         }
     }
 }

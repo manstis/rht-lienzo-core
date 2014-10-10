@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Point2DArray;
 import com.emitrom.lienzo.client.core.util.Geometry;
@@ -95,9 +94,9 @@ public class Arrow extends Shape<Arrow>
      * 
      * @param node serialized arrow 
      */
-    protected Arrow(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Arrow(JSONObject node)
     {
-        super(ShapeType.ARROW, node, ctx);
+        super(ShapeType.ARROW, node);
     }
 
     /**
@@ -507,7 +506,7 @@ public class Arrow extends Shape<Arrow>
     }
 
     @Override
-    public IFactory<Arrow> getFactory()
+    public IFactory<?> getFactory()
     {
         return new ArrowFactory();
     }
@@ -532,9 +531,9 @@ public class Arrow extends Shape<Arrow>
         }
 
         @Override
-        public Arrow create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Arrow create(JSONObject node, ValidationContext ctx)
         {
-            return new Arrow(node, ctx);
+            return new Arrow(node);
         }
     }
 }

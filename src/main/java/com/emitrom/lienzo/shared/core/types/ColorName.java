@@ -176,18 +176,11 @@ public enum ColorName implements EnumWithValue, IColor
     WHITE("white", 255, 255, 255),	// #ffffff
     WHITESMOKE("whitesmoke", 245, 245, 245),	// #f5f5f5
     YELLOW("yellow", 255, 255, 0),	// #ffff00
-    YELLOWGREEN("yellowgreen", 154, 205, 50),	// #9acd32
-    TRANSPARENT("transparent", 255, 255, 255, 0);
+    YELLOWGREEN("yellowgreen", 154, 205, 50);	// #9acd32
 
     private final String m_value;
 
-    private final int    m_r;
-
-    private final int    m_g;
-
-    private final int    m_b;
-
-    private final double m_a;
+    private int          m_r, m_g, m_b;
 
     private ColorName(String value, int r, int g, int b)
     {
@@ -195,16 +188,6 @@ public enum ColorName implements EnumWithValue, IColor
         m_r = r;
         m_g = g;
         m_b = b;
-        m_a = 1;
-    }
-
-    private ColorName(String value, int r, int g, int b, double a)
-    {
-        m_value = value;
-        m_r = r;
-        m_g = g;
-        m_b = b;
-        m_a = Math.max(Math.min(a, 1.0), 0.0);
     }
 
     public final String getValue()
@@ -219,39 +202,32 @@ public enum ColorName implements EnumWithValue, IColor
     }
 
     @Override
-    public final int getR()
+    public int getR()
     {
         return m_r;
     }
 
     @Override
-    public final int getG()
+    public int getG()
     {
         return m_g;
     }
 
     @Override
-    public final int getB()
+    public int getB()
     {
         return m_b;
     }
 
     @Override
-    public final double getA()
+    public double getA()
     {
-        return m_a;
+        return 1;
     }
 
     public Color getColor()
     {
-        if (m_a != 1)
-        {
-            return new Color(m_r, m_g, m_b);
-        }
-        else
-        {
-            return new Color(m_r, m_g, m_b, m_a);
-        }
+        return new Color(m_r, m_g, m_b);
     }
 
     public static final ColorName lookup(String key)

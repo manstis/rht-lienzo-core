@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -62,9 +61,9 @@ public class Slice extends Shape<Slice>
         setRadius(radius).setStartAngle(startAngle).setEndAngle(endAngle).setCounterClockwise(false);
     }
 
-    protected Slice(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Slice(JSONObject node)
     {
-        super(ShapeType.SLICE, node, ctx);
+        super(ShapeType.SLICE, node);
     }
 
     /**
@@ -75,37 +74,32 @@ public class Slice extends Shape<Slice>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double beg = getStartAngle();
+        double start = getStartAngle();
 
-        final double end = getEndAngle();
+        double end = getEndAngle();
 
-        if (beg == end)
+        if (start == end)
         {
             return false;
         }
-        final double r = getRadius();
+        boolean drawPacman = true;
 
-        if (r > 0)
+        if ((Math.abs(start - end) % (Math.PI * 2)) == 0)
         {
-            boolean pacman = true;
-
-            if ((Math.abs(beg - end) % (Math.PI * 2)) == 0)
-            {
-                pacman = false;
-            }
-            context.beginPath();
-
-            context.arc(0, 0, r, beg, end, isCounterClockwise());
-
-            if (pacman)
-            {
-                context.lineTo(0, 0);
-            }
-            context.closePath();
-
-            return true;
+            // full circle
+            drawPacman = false;
         }
-        return false;
+        context.beginPath();
+
+        context.arc(0, 0, getRadius(), start, end, isCounterClockwise());
+
+        if (drawPacman)
+        {
+            context.lineTo(0, 0);
+        }
+        context.closePath();
+
+        return true;
     }
 
     /**
@@ -203,7 +197,7 @@ public class Slice extends Shape<Slice>
     }
 
     @Override
-    public IFactory<Slice> getFactory()
+    public IFactory<?> getFactory()
     {
         return new SliceFactory();
     }
@@ -224,9 +218,9 @@ public class Slice extends Shape<Slice>
         }
 
         @Override
-        public Slice create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Slice create(JSONObject node, ValidationContext ctx)
         {
-            return new Slice(node, ctx);
+            return new Slice(node);
         }
     }
 }

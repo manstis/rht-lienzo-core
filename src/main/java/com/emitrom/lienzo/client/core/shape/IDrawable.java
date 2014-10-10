@@ -60,39 +60,7 @@ public interface IDrawable<T>
      * 
      * @return Scene
      */
-    public Viewport asViewport();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
     public Scene asScene();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Layer asLayer();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Group asGroup();
-
-    /**
-     * Returns this object as a {@link Scene}
-     * or null if it not a Scene.
-     * 
-     * @return Scene
-     */
-    public Shape<?> asShape();
 
     /**
      * Returns this object as an {@link IContainer}
@@ -100,7 +68,7 @@ public interface IDrawable<T>
      * 
      * @return IContainer
      */
-    public IContainer<?, ?> asContainer();
+    public IContainer<?> asContainer();
 
     /**
      * Returns this object as an {@link IPrimitive}

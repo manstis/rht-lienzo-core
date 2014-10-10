@@ -18,8 +18,7 @@
 package com.emitrom.lienzo.client.core.shape.json;
 
 import com.emitrom.lienzo.client.core.shape.IContainer;
-import com.emitrom.lienzo.client.core.shape.Node;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
+import com.emitrom.lienzo.client.core.shape.IJSONSerializable;
 
 /**
  * IContainerFactory should be implemented by {@link IFactory factories} 
@@ -30,10 +29,9 @@ import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
 public interface IContainerFactory
 {
     /**
-     * Returns whether the specified childNode is valid for this container, and if so, add it.
+     * Returns whether the specified childNode is valid for this container.
      * 
      * @param childNode IJSONSerializable
      */
-    
-    public boolean addNodeForContainer(IContainer<?, ?> container, Node<?> node, ValidationContext ctx);
+    public boolean isValidForContainer(IContainer<?> g, IJSONSerializable<?> node);
 }

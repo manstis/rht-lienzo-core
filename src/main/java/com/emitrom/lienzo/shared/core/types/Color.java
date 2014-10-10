@@ -193,7 +193,7 @@ public class Color implements IColor
      */
     public static final Color fromHSL(double h, double s, double l)
     {
-        h = (((h % 360) + 360) % 360) / 360;
+        h = (((h % 360) + 360) % 360);
 
         if (s < 0) s = 0;
         else if (s > 100) s = 1;
@@ -222,8 +222,8 @@ public class Color implements IColor
         //
         // HOW TO RETURN hsl.to.rgb(h, s, l):
         // SELECT:
-        //   l<=0.5: PUT l*(s+1) IN m2
-        //   ELSE: PUT l+s-l*s IN m2
+        // l<=0.5: PUT l*(s+1) IN m2
+        // ELSE: PUT l+s-l*s IN m2
         // PUT l*2-m2 IN m1
         // PUT hue.to.rgb(m1, m2, h+1/3) IN r
         // PUT hue.to.rgb(m1, m2, h ) IN g
@@ -233,10 +233,7 @@ public class Color implements IColor
         double m2 = (l <= 0.5) ? (l * (s + 1)) : (l + s - l * s);
         double m1 = l * 2 - m2;
 
-        return new Color(
-                fixRGB((int) Math.round(255 * hueToRGB(m1, m2, h + 1.0 / 3))),
-                fixRGB((int) Math.round(255 * hueToRGB(m1, m2, h))),
-                fixRGB((int) Math.round(255 * hueToRGB(m1, m2, h - 1.0 / 3))));
+        return new Color(fixRGB((int) Math.round(hueToRGB(m1, m2, h + 1 / 3))), fixRGB((int) Math.round(hueToRGB(m1, m2, h))), fixRGB((int) Math.round(hueToRGB(m1, m2, h - 1 / 3))));
     }
 
     /**
@@ -259,19 +256,15 @@ public class Color implements IColor
             return new Color(0, 0, 0, 0);
         }
 
+        ColorName colName = ColorName.lookup(str);
+        if (colName != null) return colName.getColor();
+
         try
         {
             if (str.startsWith("#"))
             {
                 String r, g, b;
-
-                if (str.length() == 7)
-                {
-                    r = str.substring(1, 3);
-                    g = str.substring(3, 5);
-                    b = str.substring(5, 7);
-                }
-                else if (str.length() == 4)
+                if (str.length() == 4)
                 {
                     r = str.substring(1, 2);
                     g = str.substring(2, 3);
@@ -281,16 +274,17 @@ public class Color implements IColor
                     g = g + g;
                     b = b + b;
                 }
+                else if (str.length() == 8)
+                {
+                    r = str.substring(1, 3);
+                    g = str.substring(3, 5);
+                    b = str.substring(5, 7);
+                }
                 else return null; // error - invalid length
 
                 return new Color(fixRGB(Integer.valueOf(r, 16)), fixRGB(Integer.valueOf(g, 16)), fixRGB(Integer.valueOf(b, 16)));
             }
-            else
-            {
-                ColorName colName = ColorName.lookup(str);
 
-                if (colName != null) return colName.getColor();
-            }
             // Remove whitespace
             if (str.contains(" ")) str = str.replaceAll(" ", "");
 
@@ -665,7 +659,7 @@ public class Color implements IColor
 
         if (h * 2 < 1) return m2;
 
-        if (h * 3 < 2) return m1 + (m2 - m1) * (2.0 / 3 - h) * 6;
+        if (h * 3 < 2) return m1 + (m2 - m1) * (2 / 3 - h) * 6;
 
         return m1;
     }

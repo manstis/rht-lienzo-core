@@ -25,21 +25,20 @@ import com.emitrom.lienzo.shared.core.types.IColor;
 import com.emitrom.lienzo.shared.core.types.LayerClearMode;
 import com.emitrom.lienzo.shared.core.types.LineCap;
 import com.google.gwt.canvas.client.Canvas;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.core.shared.GWT;
 
 /**
  * A Global Configuration Manager.
  */
 public final class LienzoGlobals
 {
-    private static final LienzoGlobals INSTANCE                 = new LienzoGlobals();
-
     public static final double         DEFAULT_FONT_SIZE        = 48;
 
     public static final String         DEFAULT_FONT_STYLE       = "normal";
 
     public static final String         DEFAULT_FONT_FAMILY      = "Helvetica";
+
+    private static final LienzoGlobals s_instance               = new LienzoGlobals();
 
     private double                     m_strokeWidth            = 1;
 
@@ -53,13 +52,7 @@ public final class LienzoGlobals
 
     private boolean                    m_nativeLineDashSupport  = false;
 
-    private boolean                    m_enableBlobIfSupported  = true;
-
     private boolean                    m_nativeLineDashExamine  = false;
-
-    private Cursor                     m_normal_cursor          = null;
-
-    private Cursor                     m_select_cursor          = null;
 
     private final boolean              m_canvasSupported        = Canvas.isSupported();
 
@@ -68,26 +61,10 @@ public final class LienzoGlobals
     private LienzoGlobals()
     {
     }
-    
-    @Deprecated
+
     public static final LienzoGlobals getInstance()
     {
-        return INSTANCE;
-    }
-
-    public static final LienzoGlobals get()
-    {
-        return INSTANCE;
-    }
-
-    public final boolean isBlobAPIEnabled()
-    {
-        return m_enableBlobIfSupported;
-    }
-
-    public final void setBlobAPIEnabled(boolean enabled)
-    {
-        m_enableBlobIfSupported = enabled;
+        return s_instance;
     }
 
     public final void setDefaultFillShapeForSelection(boolean fill)
@@ -285,25 +262,5 @@ public final class LienzoGlobals
             }
         }
         return false;
-    }
-    
-    public final void setDefaultNormalCursor(Cursor cursor)
-    {
-        m_normal_cursor = cursor;
-    }
-
-    public final Cursor getDefaultNormalCursor()
-    {
-        return m_normal_cursor;
-    }
-
-    public final void setSefaultSelectCursor(Cursor cursor)
-    {
-        m_select_cursor = cursor;
-    }
-
-    public final Cursor getDefaultSelectCursor()
-    {
-        return m_select_cursor;
     }
 }

@@ -30,19 +30,19 @@ public interface MessageConstants extends Constants
     @DefaultStringValue("Canvas is not supported in this browser!")
     public String getCanvasUnsupportedMessage();
 
-    @DefaultStringValue("Movie playback was aborted.")
+    @DefaultStringValue("Playback was aborted")
     public String moviePlaybackWasAborted();
 
-    @DefaultStringValue("Movie network error.")
+    @DefaultStringValue("Video network error")
     public String movieNetworkError();
 
-    @DefaultStringValue("Movie decoding error.")
+    @DefaultStringValue("Error in decoding")
     public String movieErrorInDecoding();
 
-    @DefaultStringValue("Movie format not supported.")
+    @DefaultStringValue("Format not supported")
     public String movieFormatNotSupported();
 
-    @DefaultStringValue("Movie not support in this browser.")
+    @DefaultStringValue("Video not support in this browser")
     public String movieNotSupportedInThisBrowser();
 
     // ---------- Validation
@@ -169,13 +169,13 @@ public interface MessageConstants extends Constants
     @DefaultStringValue("Rotation")
     public String rotationLabel();
 
-    @DefaultStringValue("Radians used for the rotation of the shape around its origin or offset position.")
+    @DefaultStringValue("Radians used for the rotation of the shape around its position.")
     public String rotationDescription();
 
     @DefaultStringValue("Offset")
     public String offsetLabel();
 
-    @DefaultStringValue("The offset from origin at which a shape will be rotated around.")
+    @DefaultStringValue("The offset at which the shape will be moved to.")
     public String offsetDescription();
 
     @DefaultStringValue("Draggable")
@@ -199,38 +199,50 @@ public interface MessageConstants extends Constants
     @DefaultStringValue("Radius")
     public String radiusLabel();
 
-    @DefaultStringValue("The radius of a circle or circular arc type.")
+    @DefaultStringValue("The radius of a circle or arc.")
     public String radiusDescription();
 
-    @DefaultStringValue("Clear Layer")
+    @DefaultStringValue("Image")
+    public String imageLabel();
+
+    @DefaultStringValue("An image.")
+    public String imageDescription();
+
+    @DefaultStringValue("Pre-Draw Layer Clear")
     public String clearLayerBeforeDrawLabel();
 
-    @DefaultStringValue("Indicates if the layer should be cleared before drawing.")
+    @DefaultStringValue("Indicates if the layer should be cleared before drawing on it.")
     public String clearLayerBeforeDrawDescription();
+
+    @DefaultStringValue("Zoomable")
+    public String zoomableLabel();
+
+    @DefaultStringValue("Indicates whether the layer should be affected by zoom operations.")
+    public String zoomableDescription();
 
     @DefaultStringValue("Text")
     public String textLabel();
 
-    @DefaultStringValue("String value of a Text shape.")
+    @DefaultStringValue("Text.")
     public String textDescription();
 
     @DefaultStringValue("Font Size")
     public String fontSizeLabel();
 
-    @DefaultStringValue("Text font size in points. i.e., 24.")
+    @DefaultStringValue("Text font size in points. i.e., 24")
     public String fontSizeDescription();
 
     @DefaultStringValue("Font Family")
     public String fontFamilyLabel();
 
-    @DefaultStringValue("Text font family. i.e., Tahoma.")
+    @DefaultStringValue("Text font family. i.e., Tahoma")
     public String fontFamilyDescription();
 
     @DefaultStringValue("Font Style")
-    public String fontStyleLabel();
+    public String fontStyleFamilyLabel();
 
     @DefaultStringValue("Text font style. e.g., bold, italic, normal, etc.")
-    public String fontStyleDescription();
+    public String fontStyleFamilyDescription();
 
     @DefaultStringValue("Text Padding")
     public String textPaddingLabel();
@@ -271,19 +283,19 @@ public interface MessageConstants extends Constants
     @DefaultStringValue("Outer Radius")
     public String outerRadiusLabel();
 
-    @DefaultStringValue("The radius of the shape's outer enclosing circle.")
+    @DefaultStringValue("The radius of the shape's enclosing circle.")
     public String outerRadiusDescription();
 
     @DefaultStringValue("Inner Radius")
     public String innerRadiusLabel();
 
-    @DefaultStringValue("The radius of the shape's inner enclosing circle.")
+    @DefaultStringValue("The radius of the smallest circle able to fit inside the shape.")
     public String innerRadiusDescription();
 
     @DefaultStringValue("Skew")
     public String skewLabel();
 
-    @DefaultStringValue("The skew in pixels of a Parallelogram.")
+    @DefaultStringValue("The position where the shape will be skewed to.")
     public String skewDescription();
 
     @DefaultStringValue("Shadow")
@@ -295,19 +307,19 @@ public interface MessageConstants extends Constants
     @DefaultStringValue("Start Angle")
     public String startAngleLabel();
 
-    @DefaultStringValue("The start angle of a shape's circular arc.")
+    @DefaultStringValue("The start angle of a slice.")
     public String startAngleDescription();
 
     @DefaultStringValue("End Angle")
     public String endAngleLabel();
 
-    @DefaultStringValue("The end angle of a shape's circular arc.")
+    @DefaultStringValue("The end angle of a slice.")
     public String endAngleDescription();
 
     @DefaultStringValue("Counter Clockwise")
     public String counterClockwiseLabel();
 
-    @DefaultStringValue("Indicates if the shape's circular arc should be drawn counter clockwise.")
+    @DefaultStringValue("Indicates if the shape should be drawn counter clockwise.")
     public String counterClockwiseDescription();
 
     @DefaultStringValue("Control Points")
@@ -364,28 +376,40 @@ public interface MessageConstants extends Constants
     @DefaultStringValue("The y coordinate where clipping for the image begins.")
     public String clippedImageStartYDescription();
 
+    @DefaultStringValue("Picture Category")
+    public String pictureCategoryLabel();
+
+    @DefaultStringValue("Picture Category used when reporting which images loaded.")
+    public String pictureCategoryDescription();
+
     @DefaultStringValue("Serialization Mode")
     public String serializationModeLabel();
 
     @DefaultStringValue("Used when deserializing a Picture.")
     public String serializationModeDescription();
 
+    @DefaultStringValue("Resource ID")
+    public String resourceIDLabel();
+
+    @DefaultStringValue("Used when deserializing a Picture with SerializationMode.RESOURCE_ID.")
+    public String resourceIDDescription();
+
     @DefaultStringValue("URL")
     public String urlLabel();
 
-    @DefaultStringValue("Source URL for a Picture or Movie.")
+    @DefaultStringValue("Source URL for the image.")
     public String urlDescription();
 
     @DefaultStringValue("Loop")
     public String loopLabel();
 
-    @DefaultStringValue("Indicates if the Movie should loop.")
+    @DefaultStringValue("Indicates if the movie should loop.")
     public String loopDescription();
 
     @DefaultStringValue("Volume")
     public String volumeLabel();
 
-    @DefaultStringValue("The Movie's (audio-only or video) volume.")
+    @DefaultStringValue("The movie's (audio-only or video) volume.")
     public String volumeDescription();
 
     @DefaultStringValue("Base Width")
@@ -425,92 +449,26 @@ public interface MessageConstants extends Constants
     public String transformDescription();
 
     @DefaultStringValue("Miter Limit")
-    public String miterLimitLabel();
+    public String miterLimitTypeLabel();
 
     @DefaultStringValue("The pixel limit Miter LineJoins extend.")
-    public String miterLimitDescription();
+    public String miterLimitTypeDescription();
 
     @DefaultStringValue("Curve Factor")
-    public String curveFactorLabel();
+    public String curveFactorTypeLabel();
 
     @DefaultStringValue("The curvyness factor applied to curves on a spline.")
-    public String curveFactorDescription();
+    public String curveFactorTypeDescription();
 
     @DefaultStringValue("Angle Factor")
-    public String angleFactorLabel();
+    public String angleFactorTypeLabel();
 
     @DefaultStringValue("The angle factor applied to curves on a spline.")
-    public String angleFactorDescription();
+    public String angleFactorTypeDescription();
 
     @DefaultStringValue("Line Flatten")
-    public String lineFlattenLabel();
+    public String lineFlattenTypeLabel();
 
     @DefaultStringValue("If we flatten 3 co-linear points on a spline.")
-    public String lineFlattenDescription();
-
-    @DefaultStringValue("Shear")
-    public String shearLabel();
-
-    @DefaultStringValue("Shear transform.")
-    public String shearDescription();
-
-    @DefaultStringValue("Fill Shape For Selection")
-    public String fillShapeForSelectionLabel();
-
-    @DefaultStringValue("If a shape should be filled for events on the selection layer.")
-    public String fillShapeForSelectionDescription();
-
-    @DefaultStringValue("Transformable")
-    public String transformableLabel();
-
-    @DefaultStringValue("If a Layer applies global transforms from the Viewport.")
-    public String transformableDescription();
-
-    @DefaultStringValue("Dash Offset")
-    public String dashOffsetLabel();
-
-    @DefaultStringValue("Pixel units to offset before dash array is applied.")
-    public String dashOffsetDescription();
-
-    @DefaultStringValue("Auto Play")
-    public String autoPlayLabel();
-
-    @DefaultStringValue("If a Movie automatically plays on first draw.")
-    public String autoPlayDescription();
-
-    @DefaultStringValue("Playback Rate")
-    public String playbackRateLabel();
-
-    @DefaultStringValue("Movie playback rate ( 1.0 is normal, 2.0 is double speed, -0.5 is half speed in reverse,etc ).")
-    public String playbackRateDescription();
-
-    @DefaultStringValue("Show Poster")
-    public String showPosterLabel();
-
-    @DefaultStringValue("If a Movie has a poster image, show this when Movie is not playing.")
-    public String showPosterDescription();
-
-    @DefaultStringValue("Top Width")
-    public String topWidthLabel();
-
-    @DefaultStringValue("Top width of an IsoscelesTrapezoid.")
-    public String topWidthDescription();
-
-    @DefaultStringValue("Bottom Width")
-    public String bottomWidthLabel();
-
-    @DefaultStringValue("Bottom width of an IsoscelesTrapezoid.")
-    public String bottomWidthDescription();
-
-    @DefaultStringValue("Image Selection Mode")
-    public String imageSelectionModeLabel();
-
-    @DefaultStringValue("If events on a Image use the bounding box, or ignore transparent pixels.")
-    public String imageSelectionModeDescription();
-
-    @DefaultStringValue("Drag Mode")
-    public String dragModeLabel();
-
-    @DefaultStringValue("If a shape is dragged on the Drag Layer, or in it's own Layer.")
-    public String dragModeDescription();
+    public String lineFlattenTypeDescription();
 }

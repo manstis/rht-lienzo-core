@@ -23,8 +23,6 @@ import com.emitrom.lienzo.client.core.Attribute;
 import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.LienzoGlobals;
 import com.emitrom.lienzo.client.core.NativeContext2D;
-import com.emitrom.lienzo.client.core.animation.LayerRedrawManager;
-import com.emitrom.lienzo.client.core.image.BlobImageReadyCallback;
 import com.emitrom.lienzo.client.core.shape.json.ContainerNodeFactory;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.JSONDeserializer;
@@ -95,9 +93,9 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
      * 
      * @param node 
      */
-    protected Layer(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Layer(JSONObject node)
     {
-        super(NodeType.LAYER, node, ctx);
+        super(NodeType.LAYER, node);
 
         if (NativeInternalType.BOOLEAN != getAttributes().typeOf(Attribute.CLEAR_LAYER_BEFORE_DRAW))
         {
@@ -201,13 +199,11 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public Layer add(IPrimitive<?> child)
+    public void add(IPrimitive<?> child)
     {
         super.add(child);
 
         child.attachToLayerColorMap();
-
-        return this;
     }
 
     /**
@@ -218,13 +214,11 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
     * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
     */
     @Override
-    public Layer remove(IPrimitive<?> child)
+    public void remove(IPrimitive<?> child)
     {
         child.detachFromLayerColorMap();
 
         super.remove(child);
-
-        return this;
     }
 
     /**
@@ -235,7 +229,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
      * Container. This is done to enhance performance, otherwise, for every add we would have draws impacting performance.
      */
     @Override
-    public Layer removeAll()
+    public void removeAll()
     {
         FastArrayList<IPrimitive<?>> list = getChildNodes();
 
@@ -249,8 +243,6 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
             }
         }
         super.removeAll();
-
-        return this;
     }
 
     /**
@@ -346,7 +338,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
 
         m_high = high;
 
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             m_element.setWidth(wide);
 
@@ -474,7 +466,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
      * @return IContainer
      */
     @Override
-    public IContainer<Layer, IPrimitive<?>> asContainer()
+    public IContainer<IPrimitive<?>> asContainer()
     {
         return this;
     }
@@ -486,7 +478,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
      */
     public CanvasElement getCanvasElement()
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             if (null == m_element)
             {
@@ -534,7 +526,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
      */
     public void draw()
     {
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             boolean clear = isClearLayerBeforeDraw();
 
@@ -558,12 +550,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
 
                     if (isTransformable())
                     {
-                        Viewport viewport = getViewport();
-
-                        if (null != viewport)
-                        {
-                            transform = viewport.getTransform();
-                        }
+                        transform = getViewport().getTransform();
                     }
                     if (transform != null)
                     {
@@ -611,19 +598,6 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
     }
 
     /**
-     * Performs batch updates to the Layer, that is, drawing is deferred till the next AnimationFrame,
-     * to cut down on redraws on rapid event dispatch.
-     * 
-     * @return Layer
-     */
-    public Layer batch()
-    {
-        LayerRedrawManager.get().schedule(this);
-
-        return this;
-    }
-
-    /**
      * Sets whether this object is visible.
      * 
      * @param visible
@@ -659,12 +633,6 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
         return this;
     }
 
-    @Override
-    public Layer asLayer()
-    {
-        return this;
-    }
-
     /**
      * Clears the layer.
      */
@@ -672,7 +640,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
     {
         if (false == m_virgin)
         {
-            if (LienzoGlobals.get().getLayerClearMode() == LayerClearMode.CLEAR)
+            if (LienzoGlobals.getInstance().getLayerClearMode() == LayerClearMode.CLEAR)
             {
                 Context2D context = getContext();
 
@@ -720,7 +688,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
 
         if (null != parent)
         {
-            IContainer<?, Layer> container = (IContainer<?, Layer>) parent.asContainer();
+            IContainer<Layer> container = (IContainer<Layer>) parent.asContainer();
 
             if (null != container)
             {
@@ -743,7 +711,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
 
         if (null != parent)
         {
-            IContainer<?, Layer> container = (IContainer<?, Layer>) parent.asContainer();
+            IContainer<Layer> container = (IContainer<Layer>) parent.asContainer();
 
             if (null != container)
             {
@@ -766,7 +734,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
 
         if (null != parent)
         {
-            IContainer<?, Layer> container = (IContainer<?, Layer>) parent.asContainer();
+            IContainer<Layer> container = (IContainer<Layer>) parent.asContainer();
 
             if (null != container)
             {
@@ -789,7 +757,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
 
         if (null != parent)
         {
-            IContainer<?, Layer> container = (IContainer<?, Layer>) parent.asContainer();
+            IContainer<Layer> container = (IContainer<Layer>) parent.asContainer();
 
             if (null != container)
             {
@@ -834,7 +802,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
                             find.add(node);
                         }
                     }
-                    IContainer<?, ?> cont = node.asContainer();
+                    IContainer<?> cont = node.asContainer();
 
                     if (null != cont)
                     {
@@ -851,43 +819,6 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
         }
         return find;
     }
-
-    public final boolean isBlobAPISupported()
-    {
-        return LienzoGlobals.get().isBlobAPIEnabled() && (null != m_element) && isBlobAPISupported0(m_element);
-    }
-
-    public final void getImageFromBlob(BlobImageReadyCallback callback)
-    {
-        if (false == isBlobAPISupported())
-        {
-            throw new IllegalArgumentException("Blob Images are not supported");
-        }
-        getImageFromBlob0(m_element, callback);
-    }
-
-    private static native final void getImageFromBlob0(CanvasElement element, BlobImageReadyCallback callback)
-    /*-{
-		var blobber = function(blob) {
-			url = $wnd.URL.createObjectURL(blob);
-
-			var image = new $wnd.Image();
-
-			image.onload = function() {
-
-				$wnd.URL.revokeObjectURL(url);
-
-				callback.@com.emitrom.lienzo.client.core.image.BlobImageReadyCallback::onBlobImageReady(Lcom/emitrom/lienzo/client/core/image/JSImage;)(image);
-			}
-			image.src = url;
-		};
-		element.toBlob(blobber);
-    }-*/;
-
-    private static native final boolean isBlobAPISupported0(CanvasElement element)
-    /*-{
-		return !!element.toBlob;
-    }-*/;
 
     /**
      * Returns the content of this Layer as a PNG image that can be used as a source for another canvas or an HTML element.
@@ -928,7 +859,13 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
     }
 
     @Override
-    public IFactory<Layer> getFactory()
+    public boolean isValidForContainer(IJSONSerializable<?> node)
+    {
+        return (node instanceof IPrimitive<?>);
+    }
+
+    @Override
+    public IFactory<?> getFactory()
     {
         return new LayerFactory();
     }
@@ -967,7 +904,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
         {
             CanvasElement element = null;
 
-            if (LienzoGlobals.get().isCanvasSupported())
+            if (LienzoGlobals.getInstance().isCanvasSupported())
             {
                 element = super.getCanvasElement();
 
@@ -985,7 +922,7 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
         @Override
         public void setPixelSize(int wide, int high)
         {
-            if (LienzoGlobals.get().isCanvasSupported())
+            if (LienzoGlobals.getInstance().isCanvasSupported())
             {
                 CanvasElement element = getCanvasElement();
 
@@ -1038,34 +975,17 @@ public class Layer extends ContainerNode<IPrimitive<?>, Layer>
         @Override
         public Layer create(JSONObject node, ValidationContext ctx) throws ValidationException
         {
-            Layer container = new Layer(node, ctx);
+            Layer g = new Layer(node);
 
-            JSONDeserializer.getInstance().deserializeChildren(container, node, this, ctx);
+            JSONDeserializer.getInstance().deserializeChildren(g, node, this, ctx);
 
-            return container;
+            return g;
         }
 
         @Override
-        public boolean addNodeForContainer(IContainer<?, ?> container, Node<?> node, ValidationContext ctx)
+        public boolean isValidForContainer(IContainer<?> g, IJSONSerializable<?> node)
         {
-            if (node.getNodeType().isPrimitive())
-            {
-                container.asLayer().add(node.asPrimitive());
-
-                return true;
-            }
-            else
-            {
-                try
-                {
-                    ctx.addBadTypeError(node.getClass().getName() + " is not a Primitive");
-                }
-                catch (ValidationException e)
-                {
-                    return false;
-                }
-            }
-            return false;
+            return (node instanceof IPrimitive<?>);
         }
     }
 }

@@ -18,9 +18,8 @@
 package com.emitrom.lienzo.client.core.types;
 
 import com.emitrom.lienzo.client.core.Context2D.GradientJSO;
-import com.emitrom.lienzo.client.core.image.ImageLoader;
-import com.emitrom.lienzo.client.core.image.JSImage;
 import com.emitrom.lienzo.client.core.shape.Shape;
+import com.emitrom.lienzo.client.core.types.ImageLoader.ImageJSO;
 import com.emitrom.lienzo.shared.core.types.FillRepeat;
 
 /**
@@ -37,39 +36,14 @@ public final class PatternGradient implements FillGradient
         m_jso = jso;
     }
 
-    private static final PatternGradientJSO make(ImageLoader loader, FillRepeat repeat)
-    {
-        if (false == loader.isLoaded())
-        {
-            throw new NullPointerException("image not loaded");
-        }
-        JSImage image = loader.getJSImage();
-
-        if (null == image)
-        {
-            throw new NullPointerException("image not loaded");
-        }
-        return PatternGradientJSO.make(image, repeat.getValue());
-    }
-
-    public PatternGradient(JSImage image)
-    {
-        this(PatternGradientJSO.make(image, FillRepeat.REPEAT.getValue()));
-    }
-
-    public PatternGradient(JSImage image, FillRepeat repeat)
-    {
-        this(PatternGradientJSO.make(image, repeat.getValue()));
-    }
-
     public PatternGradient(ImageLoader loader)
     {
-        this(make(loader, FillRepeat.REPEAT));
+        this(PatternGradientJSO.make(loader.getJSO(), FillRepeat.REPEAT.getValue()));
     }
 
     public PatternGradient(ImageLoader loader, FillRepeat repeat)
     {
-        this(make(loader, repeat));
+        this(PatternGradientJSO.make(loader.getJSO(), repeat.getValue()));
     }
 
     @Override
@@ -87,9 +61,10 @@ public final class PatternGradient implements FillGradient
     {
         protected PatternGradientJSO()
         {
+
         }
 
-        public static final native PatternGradientJSO make(JSImage image, String repeat)
+        public static final native PatternGradientJSO make(ImageJSO image, String repeat)
         /*-{
 			return {
 				image : image,
@@ -97,5 +72,6 @@ public final class PatternGradient implements FillGradient
 				type : "PatternGradient"
 			}
         }-*/;
+
     }
 }

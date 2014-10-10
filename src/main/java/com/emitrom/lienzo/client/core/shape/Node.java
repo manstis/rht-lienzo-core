@@ -62,10 +62,7 @@ import com.emitrom.lienzo.client.core.event.NodeTouchMoveEvent;
 import com.emitrom.lienzo.client.core.event.NodeTouchMoveHandler;
 import com.emitrom.lienzo.client.core.event.NodeTouchStartEvent;
 import com.emitrom.lienzo.client.core.event.NodeTouchStartHandler;
-import com.emitrom.lienzo.client.core.shape.json.IJSONSerializable;
 import com.emitrom.lienzo.client.core.shape.json.JSONDeserializer;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.NativeInternalType;
 import com.emitrom.lienzo.client.core.types.Point2D;
 import com.emitrom.lienzo.client.core.types.Transform;
@@ -126,7 +123,7 @@ public abstract class Node<T extends Node<T>> implements IDrawable<T>, IJSONSeri
      * @param type
      * @param node
      */
-    protected Node(NodeType type, JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Node(NodeType type, JSONObject node)
     {
         m_type = type;
 
@@ -394,33 +391,11 @@ public abstract class Node<T extends Node<T>> implements IDrawable<T>, IJSONSeri
         else
         // Otherwise use ROTATION, SCALE and OFFSET
         {
-            Point2D offset = attr.getOffset();
-
             double r = attr.getRotation();
 
             if (r != 0)
             {
-                if (null != offset)
-                {
-                    x = offset.getX();
-
-                    y = offset.getY();
-
-                    if ((x != 0) || (y != 0))
-                    {
-                        xfrm.translate(x, y);
-                    }
-                    xfrm.rotate(r);
-
-                    if ((x != 0) || (y != 0))
-                    {
-                        xfrm.translate(-1 * x, -1 * y);
-                    }
-                }
-                else
-                {
-                    xfrm.rotate(r);
-                }
+                xfrm.rotate(r);
             }
             if (attr.isDefined(Attribute.SCALE))
             {
@@ -451,6 +426,22 @@ public abstract class Node<T extends Node<T>> implements IDrawable<T>, IJSONSeri
                     if ((x != 0) || (y != 0))
                     {
                         xfrm.shear(x, y);
+                    }
+                }
+            }
+            if (attr.isDefined(Attribute.OFFSET))
+            {
+                Point2D offset = attr.getOffset();
+
+                if (null != offset)
+                {
+                    x = offset.getX();
+
+                    y = offset.getY();
+
+                    if ((x != 0) || (y != 0))
+                    {
+                        xfrm.translate(x, y);
                     }
                 }
             }
@@ -563,7 +554,7 @@ public abstract class Node<T extends Node<T>> implements IDrawable<T>, IJSONSeri
     }
 
     @Override
-    public IContainer<?, ?> asContainer()
+    public IContainer<?> asContainer()
     {
         return null;
     }
@@ -576,30 +567,6 @@ public abstract class Node<T extends Node<T>> implements IDrawable<T>, IJSONSeri
 
     @Override
     public Scene asScene()
-    {
-        return null;
-    }
-
-    @Override
-    public Viewport asViewport()
-    {
-        return null;
-    }
-
-    @Override
-    public Layer asLayer()
-    {
-        return null;
-    }
-
-    @Override
-    public Group asGroup()
-    {
-        return null;
-    }
-
-    @Override
-    public Shape<?> asShape()
     {
         return null;
     }

@@ -22,7 +22,6 @@ import com.emitrom.lienzo.client.core.Context2D;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.shared.core.types.ShapeType;
 import com.google.gwt.json.client.JSONObject;
 
@@ -62,9 +61,9 @@ public class Chord extends Shape<Chord>
         setRadius(radius).setStartAngle(startAngle).setEndAngle(endAngle).setCounterClockwise(false);
     }
 
-    protected Chord(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Chord(JSONObject node)
     {
-        super(ShapeType.CHORD, node, ctx);
+        super(ShapeType.CHORD, node);
     }
 
     /**
@@ -75,29 +74,17 @@ public class Chord extends Shape<Chord>
     @Override
     public boolean prepare(Context2D context, Attributes attr, double alpha)
     {
-        final double r = getRadius();
+        double beg = getStartAngle();
 
-        final double beg = getStartAngle();
+        double end = getEndAngle();
 
-        final double end = getEndAngle();
+        context.beginPath();
 
-        if (r > 0)
-        {
-            context.beginPath();
+        context.arc(0, 0, getRadius(), beg, end, isCounterClockwise());
 
-            if (beg == end)
-            {
-                context.arc(0, 0, r, 0, Math.PI * 2, true);
-            }
-            else
-            {
-                context.arc(0, 0, r, beg, end, isCounterClockwise());
-            }
-            context.closePath();
+        context.closePath();
 
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -195,7 +182,7 @@ public class Chord extends Shape<Chord>
     }
 
     @Override
-    public IFactory<Chord> getFactory()
+    public IFactory<?> getFactory()
     {
         return new ChordFactory();
     }
@@ -216,9 +203,9 @@ public class Chord extends Shape<Chord>
         }
 
         @Override
-        public Chord create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Chord create(JSONObject node, ValidationContext ctx)
         {
-            return new Chord(node, ctx);
+            return new Chord(node);
         }
     }
 }

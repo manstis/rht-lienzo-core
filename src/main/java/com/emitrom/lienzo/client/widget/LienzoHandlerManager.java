@@ -19,7 +19,7 @@ package com.emitrom.lienzo.client.widget;
 
 import java.util.ArrayList;
 
-import com.emitrom.lienzo.client.core.LienzoGlobals;
+import com.emitrom.lienzo.client.core.animation.LayerRedrawManager;
 import com.emitrom.lienzo.client.core.event.INodeXYEvent;
 import com.emitrom.lienzo.client.core.event.NodeDragEndEvent;
 import com.emitrom.lienzo.client.core.event.NodeDragMoveEvent;
@@ -46,7 +46,6 @@ import com.emitrom.lienzo.client.core.mediator.Mediators;
 import com.emitrom.lienzo.client.core.shape.IPrimitive;
 import com.emitrom.lienzo.client.core.shape.Node;
 import com.emitrom.lienzo.client.core.shape.Shape;
-import com.emitrom.lienzo.shared.core.types.DragMode;
 import com.emitrom.lienzo.shared.core.types.NodeType;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
@@ -105,11 +104,9 @@ final class LienzoHandlerManager
 
     private boolean           m_dragging_mouse_pressed = false;
 
-    private DragMode          m_drag_mode              = null;
+    private IPrimitive<?>     m_dragnode               = null;
 
-    private IPrimitive<?>     m_drag_node              = null;
-
-    private IPrimitive<?>     m_over_prim              = null;
+    private IPrimitive<?>     m_overprim               = null;
 
     private DragContext       m_dragContext;
 
@@ -405,43 +402,19 @@ final class LienzoHandlerManager
         {
             doDragMove(event);
 
-            Cursor cursor = m_lienzo.getNormalCursor();
+            m_lienzo.setCursor(Cursor.DEFAULT);
 
-            if (null == cursor)
-            {
-                cursor = LienzoGlobals.get().getDefaultNormalCursor();
+            m_dragnode.setVisible(true);
 
-                if (null == cursor)
-                {
-                    cursor = m_lienzo.getWidgetCursor();
+            m_dragContext.dragDone();
 
-                    if (null == cursor)
-                    {
-                        cursor = Cursor.DEFAULT;
-                    }
-                }
-            }
-            m_lienzo.setCursor(cursor);
+            m_dragnode.getLayer().draw();
 
-            if (DragMode.DRAG_LAYER == m_drag_mode)
-            {
-                m_drag_node.setVisible(true);
+            m_lienzo.getDragLayer().clear();
 
-                m_dragContext.dragDone();
+            m_dragnode.fireEvent(new NodeDragEndEvent(m_dragContext));
 
-                m_drag_node.getLayer().draw();
-
-                m_lienzo.getDragLayer().clear();
-            }
-            else
-            {
-                m_dragContext.dragDone();
-            }
-            m_drag_node.fireEvent(new NodeDragEndEvent(m_dragContext));
-
-            m_drag_node = null;
-
-            m_drag_mode = null;
+            m_dragnode = null;
 
             m_dragging = false;
 
@@ -457,38 +430,23 @@ final class LienzoHandlerManager
         {
             doDragCancel(event);
         }
-        Cursor cursor = m_lienzo.getSelectCursor();
-
-        if (null == cursor)
-        {
-            cursor = LienzoGlobals.get().getDefaultSelectCursor();
-
-            if (null == cursor)
-            {
-                cursor = Cursor.CROSSHAIR;
-            }
-        }
-        m_lienzo.setCursor(cursor);
-
-        m_drag_node = node;
-
-        m_drag_mode = node.getDragMode();
+        m_lienzo.setCursor(Cursor.CROSSHAIR);
 
         m_dragContext = new DragContext(event, node);
 
-        m_drag_node.fireEvent(new NodeDragStartEvent(m_dragContext));
+        m_dragnode = node;
+
+        m_dragnode.fireEvent(new NodeDragStartEvent(m_dragContext));
 
         m_dragging = true;
 
-        if (DragMode.DRAG_LAYER == m_drag_mode)
-        {
-            m_drag_node.setVisible(false);
+        m_dragnode.setVisible(false);
 
-            m_drag_node.getLayer().draw();
+        m_dragContext.drawNode(m_lienzo.getDragLayer().getContext());
 
-            m_dragContext.drawNodeWithTransforms(m_lienzo.getDragLayer().getContext());
-        }
-        m_dragging_dispatch_move = m_drag_node.isEventHandled(NodeDragMoveEvent.getType());
+        LayerRedrawManager.get().schedule(m_dragnode.getLayer());
+
+        m_dragging_dispatch_move = m_dragnode.isEventHandled(NodeDragMoveEvent.getType());
 
         m_dragging_using_touches = ((event.getNodeEvent().getAssociatedType() == NodeTouchMoveEvent.getType()) || (event.getNodeEvent().getAssociatedType() == NodeTouchStartEvent.getType()));
     }
@@ -499,18 +457,17 @@ final class LienzoHandlerManager
 
         if (m_dragging_dispatch_move)
         {
-            m_drag_node.fireEvent(new NodeDragMoveEvent(m_dragContext));
+            m_dragnode.fireEvent(new NodeDragMoveEvent(m_dragContext));
         }
-        if (DragMode.DRAG_LAYER == m_drag_mode)
-        {
-            m_lienzo.getDragLayer().draw();
+        // Draw after processing the drag move event
 
-            m_dragContext.drawNodeWithTransforms(m_lienzo.getDragLayer().getContext());
-        }
-        else
-        {
-            m_drag_node.getLayer().batch();
-        }
+        // First the graphics on the drag layer
+
+        m_lienzo.getDragLayer().draw();
+
+        // ... then the node that is being moved
+
+        m_dragContext.drawNode(m_lienzo.getDragLayer().getContext());
     }
 
     private final void onNodeMouseClick(INodeXYEvent event)
@@ -614,11 +571,11 @@ final class LienzoHandlerManager
 
     private final void doCancelEnterExitShape(INodeXYEvent event)
     {
-        if ((null != m_over_prim) && (m_over_prim.isEventHandled(NodeMouseExitEvent.getType())))
+        if ((null != m_overprim) && (m_overprim.isEventHandled(NodeMouseExitEvent.getType())))
         {
-            m_over_prim.fireEvent(new NodeMouseExitEvent(event.getX(), event.getY()));
+            m_overprim.fireEvent(new NodeMouseExitEvent(event.getX(), event.getY()));
         }
-        m_over_prim = null;
+        m_overprim = null;
     }
 
     // This will also return the shape under the cursor, for some optimization on Mouse Move
@@ -631,23 +588,23 @@ final class LienzoHandlerManager
         {
             IPrimitive<?> prim = shape.asPrimitive();
 
-            if (null != m_over_prim)
+            if (null != m_overprim)
             {
-                if (prim != m_over_prim)
+                if (prim != m_overprim)
                 {
-                    if (m_over_prim.isEventHandled(NodeMouseExitEvent.getType()))
+                    if (m_overprim.isEventHandled(NodeMouseExitEvent.getType()))
                     {
-                        m_over_prim.fireEvent(new NodeMouseExitEvent(event.getX(), event.getY()));
+                        m_overprim.fireEvent(new NodeMouseExitEvent(event.getX(), event.getY()));
                     }
                 }
             }
-            if (prim != m_over_prim)
+            if (prim != m_overprim)
             {
                 if ((null != prim) && (prim.isEventHandled(NodeMouseEnterEvent.getType())))
                 {
                     prim.fireEvent(new NodeMouseEnterEvent(event.getX(), event.getY()));
                 }
-                m_over_prim = prim;
+                m_overprim = prim;
             }
         }
         else

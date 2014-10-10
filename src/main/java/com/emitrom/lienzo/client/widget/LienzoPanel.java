@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2012-2014 Emitrom LLC. All rights reserved. 
+   Copyright (c) 2012 Emitrom LLC. All rights reserved. 
    For licensing questions, please contact us at licensing@emitrom.com
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,23 +18,28 @@
 package com.emitrom.lienzo.client.widget;
 
 import com.emitrom.lienzo.client.core.LienzoGlobals;
+import com.emitrom.lienzo.client.core.event.OrientationChangeEvent;
+import com.emitrom.lienzo.client.core.event.OrientationChangeEvent.Orientation;
+import com.emitrom.lienzo.client.core.event.ResizeChangeEvent;
+import com.emitrom.lienzo.client.core.event.ResizeEndEvent;
+import com.emitrom.lienzo.client.core.event.ResizeStartEvent;
 import com.emitrom.lienzo.client.core.i18n.MessageConstants;
 import com.emitrom.lienzo.client.core.mediator.IMediator;
 import com.emitrom.lienzo.client.core.mediator.Mediators;
 import com.emitrom.lienzo.client.core.shape.Layer;
 import com.emitrom.lienzo.client.core.shape.Scene;
 import com.emitrom.lienzo.client.core.shape.Viewport;
-import com.emitrom.lienzo.client.core.util.CursorMap;
 import com.emitrom.lienzo.shared.core.types.DataURLType;
 import com.emitrom.lienzo.shared.core.types.IColor;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
 
 /**
  * LienzoPanel acts as a Container for a {@link Viewport}.
@@ -46,84 +51,44 @@ import com.google.gwt.user.client.ui.RequiresResize;
  * <li>The main {@link Scene} can contain multiple {@link Layer}.</li>
  * </ul> 
  */
-public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesResize
+public class LienzoPanel extends FocusPanel
 {
-    private LienzoHandlerManager m_events;
+    private final LienzoHandlerManager m_events;
 
-    private int                  m_wide;
+    private final int                  m_wide;
 
-    private int                  m_high;
+    private final int                  m_high;
 
-    private boolean              m_flex;
+    private Viewport                   m_view;
 
-    private Viewport             m_view;
+    private boolean                    m_resizing                     = false;
 
-    private Cursor               m_widget_cursor;
+    private Timer                      m_resize_timer;
 
-    private Cursor               m_active_cursor;
+    private int                        m_resize_check_repeat_interval = 750;
 
-    private Cursor               m_normal_cursor;
-
-    private Cursor               m_select_cursor;
-
-    public LienzoPanel()
-    {
-        this(new Viewport());
-    }
-
-    public LienzoPanel(Viewport view)
-    {
-        if (false == view.adopt(this))
-        {
-            throw new IllegalArgumentException("Viewport is already adopted.");
-        }
-        m_view = view;
-
-        setWidth("100%");
-
-        setHeight("100%");
-
-        doPostCTOR(Window.getClientWidth(), Window.getClientHeight(), true);
-    }
+    private Orientation                m_orientation;
 
     public LienzoPanel(int wide, int high)
-    {
-        this(new Viewport(), wide, high);
-    }
-
-    public LienzoPanel(Scene scene, int wide, int high)
-    {
-        this(new Viewport(scene, wide, high), wide, high);
-    }
-
-    public LienzoPanel(Viewport view, int wide, int high)
-    {
-        if (false == view.adopt(this))
-        {
-            throw new IllegalArgumentException("Viewport is already adopted.");
-        }
-        m_view = view;
-
-        doPostCTOR(wide, high, false);
-    }
-
-    void doPostCTOR(int wide, int high, boolean flex)
     {
         m_wide = wide;
 
         m_high = high;
 
-        m_flex = flex;
+        m_view = new Viewport(wide, high);
 
-        if (LienzoGlobals.get().isCanvasSupported())
+        if (LienzoGlobals.getInstance().isCanvasSupported())
         {
             getElement().appendChild(m_view.getElement());
 
             setPixelSize(wide, high);
 
-            m_widget_cursor = CursorMap.get().lookup(getElement().getStyle().getCursor());
-
             m_events = new LienzoHandlerManager(this);
+
+            initResizeTimer();
+
+            addHandlers();
+
         }
         else
         {
@@ -131,30 +96,7 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
 
             m_events = null;
         }
-    }
 
-    @Override
-    public void onResize()
-    {
-        if (m_flex)
-        {
-            int wide = getParent().getOffsetWidth();
-
-            int high = getParent().getOffsetHeight();
-
-            if ((wide != 0) && (high != 0))
-            {
-                setPixelSize(wide, high);
-            }
-        }
-    }
-
-    @Override
-    public void onAttach()
-    {
-        super.onAttach();
-
-        onResize();
     }
 
     /**
@@ -164,9 +106,11 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
      * @param layer
      * @return
      */
-    public void add(Layer layer)
+    public LienzoPanel add(Layer layer)
     {
         getScene().add(layer);
+
+        return this;
     }
 
     /**
@@ -176,9 +120,11 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
      * @param layer
      * @return
      */
-    public void remove(Layer layer)
+    public LienzoPanel remove(Layer layer)
     {
         getScene().remove(layer);
+
+        return this;
     }
 
     /**
@@ -188,9 +134,11 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
      * @param layer
      * @return
      */
-    public void removeAll()
+    public LienzoPanel removeAll()
     {
         getScene().removeAll();
+
+        return this;
     }
 
     /**
@@ -203,61 +151,22 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
         super.setPixelSize(wide, high);
 
         m_view.setPixelSize(wide, high);
-
-        m_view.draw();
     }
 
     /**
      * Sets the type of cursor to be used when hovering above the element.
      * @param cursor
      */
-    public void setCursor(Cursor cursor)
+    public void setCursor(final Cursor cursor)
     {
-        if ((cursor != null) && (cursor != m_active_cursor))
+        Scheduler.get().scheduleDeferred(new ScheduledCommand()
         {
-            m_active_cursor = cursor;
-
-            // Need to defer this, sometimes, if the browser is busy, etc, changing cursors does not take effect till events are done processing
-
-            Scheduler.get().scheduleDeferred(new ScheduledCommand()
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    getElement().getStyle().setCursor(m_active_cursor);
-                }
-            });
-        }
-    }
-
-    public void setNormalCursor(Cursor cursor)
-    {
-        m_normal_cursor = cursor;
-    }
-
-    public Cursor getNormalCursor()
-    {
-        return m_normal_cursor;
-    }
-
-    public void setSelectCursor(Cursor cursor)
-    {
-        m_select_cursor = cursor;
-    }
-
-    public Cursor getSelectCursor()
-    {
-        return m_select_cursor;
-    }
-
-    public Cursor getActiveCursor()
-    {
-        return m_active_cursor;
-    }
-
-    final Cursor getWidgetCursor()
-    {
-        return m_widget_cursor;
+                getElement().getStyle().setCursor(cursor);
+            }
+        });
     }
 
     /**
@@ -296,6 +205,34 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
     public Layer getDragLayer()
     {
         return m_view.getDraglayer();
+    }
+
+    /**
+     * Sets the frequency in milliseconds at which the
+     * timer will check to see if a resize operation is taking place.
+     * 
+     * Default value is 750 milliseconds.
+     * 
+     * The value is used to determine when to trigger a ResizeEndEvent
+     * 
+     * @param resizeCheckRepeatInterval
+     */
+    public void setResizeCheckRepeatInterval(int resizeCheckRepeatInterval)
+    {
+        m_resize_check_repeat_interval = resizeCheckRepeatInterval;
+    }
+
+    /**
+     * Returns the resize check repeat interval that is being used
+     * to check if there is a resize operation taking place.
+     * 
+     * The value is used to determine when to trigger a ResizeEndEvent
+     * 
+     * @return
+     */
+    public int setResizeCheckRepeatInterval()
+    {
+        return m_resize_check_repeat_interval;
     }
 
     /**
@@ -353,9 +290,11 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
      * @param color String
      * @return this LienzoPanel
      */
-    public void setBackgroundColor(String color)
+    public LienzoPanel setBackgroundColor(String color)
     {
         getElement().getStyle().setBackgroundColor(color);
+
+        return this;
     }
 
     /**
@@ -364,9 +303,9 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
      * @param color IColor, i.e. ColorName or Color
      * @return this LienzoPanel
      */
-    public void setBackgroundColor(IColor color)
+    public LienzoPanel setBackgroundColor(IColor color)
     {
-        setBackgroundColor(color.getColorString());
+        return setBackgroundColor(color.getColorString());
     }
 
     /**
@@ -411,4 +350,80 @@ public class LienzoPanel extends FocusPanel implements RequiresResize, ProvidesR
 			return enabled;
 		}
     }-*/;
+
+    private void initResizeTimer()
+    {
+        m_resize_timer = new Timer()
+        {
+            @Override
+            public void run()
+            {
+                m_resizing = false;
+
+                if (!m_resizing)
+                {
+                    int w = getElement().getParentElement().getClientWidth();
+
+                    int h = getElement().getParentElement().getClientHeight();
+
+                    getViewport().getHandlerManager().fireEvent(new ResizeEndEvent(w, h));
+
+                    cancel();
+                }
+            }
+        };
+    }
+
+    private void addHandlers()
+    {
+        Window.addResizeHandler(new ResizeHandler()
+        {
+            @Override
+            public void onResize(ResizeEvent event)
+            {
+                int w = getElement().getParentElement().getClientWidth();
+
+                int h = getElement().getParentElement().getClientHeight();
+
+                setPixelSize(w, h);
+
+                if (!m_resizing)
+                {
+                    m_resizing = true;
+
+                    getViewport().getHandlerManager().fireEvent(new ResizeStartEvent(w, h));
+
+                    m_resize_timer.scheduleRepeating(m_resize_check_repeat_interval);
+                }
+                m_resizing = true;
+
+                getViewport().getHandlerManager().fireEvent(new ResizeChangeEvent(w, h));
+
+                Orientation orientation;
+
+                if (w > h)
+                {
+                    orientation = Orientation.LANDSCAPE;
+                }
+                else
+                {
+                    orientation = Orientation.PORTRAIT;
+                }
+                if (orientation != m_orientation)
+                {
+                    m_orientation = orientation;
+
+                    getViewport().getHandlerManager().fireEvent(new OrientationChangeEvent(w, h));
+                }
+                Scheduler.get().scheduleDeferred(new ScheduledCommand()
+                {
+                    @Override
+                    public void execute()
+                    {
+                        m_view.draw();
+                    }
+                });
+            }
+        });
+    }
 }

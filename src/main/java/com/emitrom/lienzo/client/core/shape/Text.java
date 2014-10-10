@@ -24,7 +24,6 @@ import com.emitrom.lienzo.client.core.LienzoGlobals;
 import com.emitrom.lienzo.client.core.shape.json.IFactory;
 import com.emitrom.lienzo.client.core.shape.json.ShapeFactory;
 import com.emitrom.lienzo.client.core.shape.json.validators.ValidationContext;
-import com.emitrom.lienzo.client.core.shape.json.validators.ValidationException;
 import com.emitrom.lienzo.client.core.types.LinearGradient;
 import com.emitrom.lienzo.client.core.types.LinearGradient.LinearGradientJSO;
 import com.emitrom.lienzo.client.core.types.PatternGradient;
@@ -52,7 +51,7 @@ public class Text extends Shape<Text>
     {
         super(ShapeType.TEXT);
 
-        LienzoGlobals globals = LienzoGlobals.get();
+        LienzoGlobals globals = LienzoGlobals.getInstance();
 
         if (null == text)
         {
@@ -72,7 +71,7 @@ public class Text extends Shape<Text>
     {
         super(ShapeType.TEXT);
 
-        LienzoGlobals globals = LienzoGlobals.get();
+        LienzoGlobals globals = LienzoGlobals.getInstance();
 
         if (null == text)
         {
@@ -101,7 +100,7 @@ public class Text extends Shape<Text>
     {
         super(ShapeType.TEXT);
 
-        LienzoGlobals globals = LienzoGlobals.get();
+        LienzoGlobals globals = LienzoGlobals.getInstance();
 
         if (null == text)
         {
@@ -122,9 +121,9 @@ public class Text extends Shape<Text>
         setText(text).setFontFamily(family).setFontStyle(style).setFontSize(points);
     }
 
-    protected Text(JSONObject node, ValidationContext ctx) throws ValidationException
+    protected Text(JSONObject node)
     {
-        super(ShapeType.TEXT, node, ctx);
+        super(ShapeType.TEXT, node);
     }
 
     /**
@@ -137,9 +136,7 @@ public class Text extends Shape<Text>
     {
         String text = getText();
 
-        double size = getFontSize();
-
-        if ((null == text) || (text.isEmpty()) || (false == (size > 0)))
+        if ((null == text) || (text.isEmpty()))
         {
             return false;
         }
@@ -151,7 +148,7 @@ public class Text extends Shape<Text>
         {
             context.setTextAlign(getTextAlign());
         }
-        context.setTextFont(getFontStyle() + " " + size + "pt " + getFontFamily());
+        context.setTextFont(getFontStyle() + " " + getFontSize() + "pt " + getFontFamily());
 
         return true;
     }
@@ -448,7 +445,7 @@ public class Text extends Shape<Text>
     }
 
     @Override
-    public IFactory<Text> getFactory()
+    public IFactory<?> getFactory()
     {
         return new TextFactory();
     }
@@ -473,9 +470,9 @@ public class Text extends Shape<Text>
         }
 
         @Override
-        public Text create(JSONObject node, ValidationContext ctx) throws ValidationException
+        public Text create(JSONObject node, ValidationContext ctx)
         {
-            return new Text(node, ctx);
+            return new Text(node);
         }
     }
 }
